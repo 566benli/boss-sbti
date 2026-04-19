@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>老板 SBTI 物种鉴定中心</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>老板 SBTI</h1>
+      <p class="tagline">测试你的老板是什么脏东西｜结果池：30 种老板人格</p>
+    </header>
+
+    <main>
+      <section id="screen-landing" class="card">
+        <img
+          class="hero-img"
+          src="assets/boss-hero.svg"
+          width="640"
+          height="320"
+          alt="老板形象占位图，可替换为 assets/boss-hero.jpg"
+        />
+        <h2>欢迎进入老板物种鉴定中心。</h2>
+        <p>本测试将通过 18–22 个问题，判断你的老板属于哪种职场脏东西。</p>
+        <p class="warn">请基于真实经历作答，不要替老板洗白。</p>
+        <button type="button" id="btn-start" class="primary">开始鉴定</button>
+      </section>
+
+      <section id="screen-quiz" class="card" hidden>
+        <p id="quiz-progress" class="muted"></p>
+        <p id="quiz-phase" class="muted"></p>
+        <p id="branch-banner" class="banner" hidden></p>
+        <h2 id="question-title"></h2>
+        <p id="question-scenario" class="scenario"></p>
+        <div id="question-options" class="options"></div>
+      </section>
+
+      <section id="screen-result" class="card" hidden>
+        <h2>鉴定报告</h2>
+        <div id="result-main" class="result-block"></div>
+        <div id="result-sub"></div>
+        <div id="result-radar" class="result-block"></div>
+        <p id="result-advice" class="advice"></p>
+        <button type="button" id="btn-retry" class="secondary">返回首页</button>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>内容来源：《老板SBTI图鉴》设计稿与图鉴条目。</small>
+    </footer>
+
+    <script src="types-data.js"></script>
+    <script src="quiz-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

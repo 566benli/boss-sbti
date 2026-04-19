@@ -1,0 +1,167 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --card: #171b22;
+  --text: #e8ecf1;
+  --muted: #9aa3ad;
+  --accent: #f5b14a;
+  --border: #2a3140;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.site-header,
+.site-footer {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  color: var(--muted);
+}
+
+.tagline {
+  color: var(--muted);
+  margin: 0.25rem 0 0;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.25rem 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.hero-img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.warn {
+  color: #ffb4b4;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.banner {
+  background: #1f2a3a;
+  border: 1px solid #355070;
+  color: #cfe3ff;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.scenario {
+  white-space: pre-wrap;
+  background: #121722;
+  border: 1px dashed var(--border);
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  color: #dbe4ee;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.opt-btn {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #121722;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: border-color 0.15s, transform 0.05s;
+}
+
+.opt-btn:hover {
+  border-color: var(--accent);
+}
+
+.opt-btn:active {
+  transform: translateY(1px);
+}
+
+.primary,
+.secondary {
+  margin-top: 1rem;
+  padding: 0.75rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.primary {
+  background: linear-gradient(135deg, #f5b14a, #e48b28);
+  color: #1a1206;
+  font-weight: 600;
+  border: none;
+}
+
+.secondary {
+  background: transparent;
+  color: var(--text);
+}
+
+.result-block {
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.sub-card {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.advice {
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border-radius: 8px;
+  background: #11151d;
+  border: 1px solid var(--border);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.3;
+}
+
+h2 {
+  margin-top: 0;
+}
