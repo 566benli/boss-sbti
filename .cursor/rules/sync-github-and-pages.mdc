@@ -1,0 +1,46 @@
+---
+description: Any change must be synced to GitHub and verified on the live GitHub Pages site, with a self-check report back to the user
+alwaysApply: true
+---
+
+# 同步规则：本地 → GitHub → 线上 Pages
+
+本仓库是 **GitHub Pages 静态站**。仓库：`566benli/boss-sbti`，线上地址：
+`https://566benli.github.io/boss-sbti/`。
+
+## 每次修改都必须做到（按顺序）
+
+1. **改本地文件**：用编辑工具改 `index.html` / `app.js` / `styles.css` / `types-data.js` / `quiz-data.js` / `assets/` 等。
+2. **自查语法/引用**：
+   - 新增的资源文件确实存在（如替换图片，先确认 `assets/xxx.jpg` 已在仓库里）。
+   - 对 JS 做 `node --check` 语法检查（若本机有 Node）。
+   - 修改题库/图鉴时，校验 `next` 指向存在的题号、人格键存在于 `BOSS_TYPES`。
+3. **提交并推送到 GitHub**（一定要 push，不只是 commit）：
+   ```powershell
+   Set-Location -LiteralPath "c:\Users\Administrator\Desktop\老板SBTI"
+   git add -A
+   git commit -m "<简短说明本次修改>"
+   git push
+   ```
+4. **等待并验证线上部署**：
+   - `gh api repos/566benli/boss-sbti/pages/builds/latest --jq '{status,error:.error.message,commit}'`
+   - 轮询直到 `status == "built"` 且 `error == null`，约 30–90 秒。
+   - 再用 WebFetch 访问 `https://566benli.github.io/boss-sbti/` 确认关键文案/元素确已更新（例如新增题干、替换后的图片 `<img>` 路径）。
+5. **向用户汇报**：
+   - 变更摘要、涉及文件
+   - 最新 commit SHA（`git log -1 --oneline`）
+   - 线上构建状态与已验证的表现
+   - 若有任何报错或未生效项，明确标出并给出修复方案
+
+## 不允许的做法
+
+- 只在本地改，不推送。
+- 推送后不等 Pages 构建，不做线上核对就回复“完成”。
+- 引入不存在的资源（会在线上 404）。
+- 私自改 `.git`/远程配置、或把大文件（PDF/DOCX）重新加回仓库（仓库 `.gitignore` 已排除）。
+
+## 遇到问题时
+
+- Push 被拒（权限不足、分支保护、workflow scope 等）：**先汇报具体报错**，再提出最小改动方案，征求用户同意后再执行。
+- Pages 构建失败（`status=errored`）：读取 `error.message` 并定位具体文件；修好后再次 commit/push/验证。
+- 线上访问 404 或旧内容：检查 commit 是否真的到 `origin/main`（`git log origin/main -1`），以及 Pages 是否在 building。
