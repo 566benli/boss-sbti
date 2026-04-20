@@ -1,0 +1,12 @@
+{
+  "name": "boss-sbti",
+  "private": true,
+  "version": "1.0.0",
+  "description": "老板 SBTI 物种鉴定中心（静态页 + 离线回归测试）",
+  "scripts": {
+    "test": "node _tests/run.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^29.0.2"
+  }
+}
