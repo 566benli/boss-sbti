@@ -7,3 +7,6 @@ Thumbs.db
 node_modules/
 _commit_msg.txt
 _docx_tmp/
+_worker/node_modules/
+_worker/.wrangler/
+_worker/.dev.vars

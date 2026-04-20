@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>完整报告 · 老板 SBTI</title>
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="bosssbti-api" content="https://api.bosssbti.com" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>老板 SBTI · 完整报告</h1>
+      <p class="tagline">已解锁｜可转发分享</p>
+    </header>
+
+    <main>
+      <section id="report-loading" class="card">
+        <p class="muted">正在拉取你的完整鉴定报告…</p>
+      </section>
+
+      <section id="report-locked" class="card" hidden>
+        <h2>本次鉴定尚未解锁</h2>
+        <p>仅付费用户可查看完整画像、相似人格、危险关键词、恐怖/治愈评级和生存建议。</p>
+        <a class="primary" href="/">返回解锁</a>
+      </section>
+
+      <section id="report-body" class="card" hidden>
+        <div id="report-main" class="result-block"></div>
+        <div id="report-sub"></div>
+        <div id="report-radar" class="result-block"></div>
+        <div id="report-advice" class="advice"></div>
+
+        <div class="share-section">
+          <h3>转发这份报告</h3>
+          <p class="muted">把你老板的鉴定报告甩给他看看（或甩进员工群）。每一次点击都会被匿名统计到管理员后台。</p>
+          <div id="share-panel"></div>
+        </div>
+
+        <button type="button" id="btn-home" class="secondary" style="margin-top:1rem">返回首页</button>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>内容来源：《老板SBTI图鉴》设计稿与图鉴条目。</small>
+    </footer>
+
+    <script src="types-data.js"></script>
+    <script src="quiz-data.js"></script>
+    <script src="api.js"></script>
+    <script src="share.js"></script>
+    <script>
+      (function () {
+        const el = (id) => document.getElementById(id);
+
+        function getSid() {
+          const u = new URL(location.href);
+          return u.searchParams.get("sid") || (window.BossAPI && window.BossAPI.sid.load()) || "";
+        }
+
+        function starLine(label, filled, total) {
+          let s = "";
+          for (let i = 0; i < total; i++) s += i < filled ? "★" : "☆";
+          return `${label}：${s}`;
+        }
+
+        const DIM_BOUNDS = (function () {
+          /* 前端无法轻易复算题库上下界，这里用一个温和的归一化，1–5 档。
+           * 这些数字对齐 app.js 里 computeDimBounds 在全量题库下的大致区间。*/
+          return { E: [-6, 18], C: [-8, 20], T: [-6, 16], M: [-6, 16] };
+        })();
+
+        function toStars(key, v) {
+          const [mn, mx] = DIM_BOUNDS[key];
+          const span = mx - mn || 1;
+          const t = Math.max(0, Math.min(1, (v - mn) / span));
+          return Math.max(1, Math.min(5, 1 + Math.round(t * 4)));
+        }
+
+        function renderFullCard(key) {
+          const t = (window.BOSS_TYPES || {})[key];
+          if (!t) return `<p class="muted">未知类型：${key}</p>`;
+          const horror = t.horror ? `<p><strong>恐怖评级：</strong>${t.horror}</p>` : "";
+          const luck = t.luck ? `<p><strong>好运评级：</strong>${t.luck}</p>` : "";
+          const heal = t.heal ? `<p><strong>治愈评级：</strong>${t.heal}</p>` : "";
+          const kd = t.keywordDanger ? `<p><strong>危险关键词：</strong>「${t.keywordDanger}」</p>` : "";
+          const kh = t.keywordHappy ? `<p><strong>幸福关键词：</strong>「${t.keywordHappy}」</p>` : "";
+          const ks = t.keywordSafe ? `<p><strong>安全关键词：</strong>「${t.keywordSafe}」</p>` : "";
+          const img = t.image
+            ? `<img class="boss-img" src="${t.image}" alt="${t.code} · ${t.name}" loading="lazy" />`
+            : "";
+          return `
+            ${img}
+            <h3>${t.code}｜${t.name}</h3>
+            <p><strong>性格描述：</strong>${t.desc || ""}</p>
+            <p><strong>典型行为：</strong>${t.behavior || ""}</p>
+            ${horror}${luck}${heal}
+            ${kd}${kh}${ks}
+          `;
+        }
+
+        function advice(key) {
+          const map = window.SURVIVAL_ADVICE || {};
+          return map[key] || map.DEFAULT || "对付这类老板，记录证据、控制边界、尽量减少非工作时间暴露；准备下一步路比和他硬碰更有效。";
+        }
+
+        async function boot() {
+          const sid = getSid();
+          if (!sid) {
+            el("report-loading").hidden = true;
+            el("report-locked").hidden = false;
+            return;
+          }
+
+          let data;
+          try {
+            data = await window.BossAPI.report.full(sid);
+          } catch (err) {
+            el("report-loading").hidden = true;
+            if (err.status === 402 || err.code === "PAYMENT_REQUIRED") {
+              el("report-locked").hidden = false;
+            } else {
+              el("report-loading").hidden = false;
+              el("report-loading").innerHTML = `<p class="warn">加载失败：${err.message || err}</p><a class="secondary" href="/">返回首页</a>`;
+            }
+            return;
+          }
+
+          const main = data.mainType;
+          const sub  = data.subType;
+          el("report-main").innerHTML = renderFullCard(main);
+          if (sub && sub !== main) {
+            el("report-sub").innerHTML = `<div class="sub-card"><h4>相似人格</h4>${renderFullCard(sub)}</div>`;
+          }
+          const d = data.dim || {};
+          const L = window.DIMENSION_LABELS || { E: "E", C: "C", T: "T", M: "M" };
+          el("report-radar").innerHTML = `
+            <h4>老板污染类型（四维归一化为 1–5 档）</h4>
+            <p>${starLine(L.E, toStars("E", d.E || 0), 5)}</p>
+            <p>${starLine(L.C, toStars("C", d.C || 0), 5)}</p>
+            <p>${starLine(L.T, toStars("T", d.T || 0), 5)}</p>
+            <p>${starLine(L.M, toStars("M", d.M || 0), 5)}</p>
+          `;
+          el("report-advice").innerHTML = `<h4>生存建议</h4><p>${advice(main)}</p>`;
+
+          el("report-loading").hidden = true;
+          el("report-body").hidden = false;
+
+          const shareUrl = `${location.origin}/?from=${encodeURIComponent(sid)}`;
+          const t = (window.BOSS_TYPES || {})[main] || {};
+          window.BossShare.mount(el("share-panel"), {
+            sid,
+            url: shareUrl,
+            title: `我被鉴定为「${t.code || ""}｜${t.name || "某种老板"}」的下属`,
+            desc: "老板SBTI 帮我识别了老板这个物种，快来测测你自己的老板。",
+          });
+
+          el("btn-home").addEventListener("click", () => { location.href = "/"; });
+        }
+
+        boot();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+name = "boss-sbti-api"
+main = "src/index.js"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# 路由绑定：接到 api.bosssbti.com 的所有路径
+# 部署时需要在 Cloudflare 控制台为 bosssbti.com zone 添加 CNAME：
+# api  ->  boss-sbti-api.<你的worker子域>.workers.dev （Proxied 橙云）
+# 或直接用 [[routes]] 由 Workers 接管：
+[[routes]]
+pattern = "api.bosssbti.com/*"
+zone_name = "bosssbti.com"
+
+# 开发时可用的 preview URL：
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "boss-sbti"
+database_id = "REPLACE_WITH_REAL_D1_ID_AFTER_CREATE"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_REAL_KV_ID_AFTER_CREATE"
+
+# vars（非敏感）
+[vars]
+PAYMENT_MODE = "mock"
+ALLOWED_ORIGINS = "https://bosssbti.com,https://www.bosssbti.com,https://566benli.github.io"
+PRICE_CENT = "99"
+
+# 敏感密钥通过 `wrangler secret put` 设置：
+#   ADMIN_PASSWORD          —— 管理员登录密码
+#   ADMIN_JWT_SECRET        —— HS256 签名密钥
+#   IP_HASH_SALT            —— 每日 IP 哈希盐
+#   MOCK_WEBHOOK_SECRET     —— Phase 1 demo 付费按钮签名
+#   XUNHUPAY_APPID          —— Phase 2
+#   XUNHUPAY_APPSECRET      —— Phase 2

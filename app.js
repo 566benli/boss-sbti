@@ -24,6 +24,9 @@
     branchMessage: "",
     dimBounds: { E: [0, 0], C: [0, 0], T: [0, 0], M: [0, 0] },
     randomInserted: 0,
+    sid: null,
+    answerTrail: [],
+    resolved: null,
   };
 
   function initTypeScores() {
@@ -63,7 +66,7 @@
     return { op: "goto", target: "Q1" };
   }
 
-  function applyOption(option) {
+  function applyOption(option, question, optionIndex) {
     Object.entries(option.dimension || {}).forEach(([k, v]) => {
       state.dim[k] = (state.dim[k] || 0) + v;
     });
@@ -71,6 +74,13 @@
       if (state.types[k] == null) state.types[k] = 0;
       state.types[k] += v;
     });
+    if (question) {
+      state.answerTrail.push({
+        qid: question.id,
+        idx: optionIndex,
+        text: (option.text || "").slice(0, 60),
+      });
+    }
   }
 
   function pickRandomQuestion() {
@@ -106,7 +116,7 @@
       b.type = "button";
       b.className = "opt-btn";
       b.textContent = `${labels[i]}. ${o.text}`;
-      b.addEventListener("click", () => onChoose(o, q));
+      b.addEventListener("click", () => onChoose(o, q, i));
       opts.appendChild(b);
     });
     const idx = MAINLINE.indexOf(q.id);
@@ -117,11 +127,11 @@
     state.branchMessage = "";
   }
 
-  function onChoose(option, question) {
-    applyOption(option);
+  function onChoose(option, question, optionIndex) {
+    applyOption(option, question, optionIndex);
     const nav = parseNext(option.next);
     if (nav.op === "finish") {
-      showResults();
+      showLockedPreview();
       return;
     }
     if (nav.op === "return") {
@@ -265,49 +275,59 @@
     return { main: t1, sub: t2 };
   }
 
-  function renderTypeCard(key) {
+  function renderLockedCard(key) {
     const t = window.BOSS_TYPES[key];
-    if (!t) {
-      return `<p class="muted">未知类型：${key}</p>`;
-    }
-    const horror = t.horror ? `<p><strong>恐怖评级：</strong>${t.horror}</p>` : "";
-    const luck = t.luck ? `<p><strong>好运评级：</strong>${t.luck}</p>` : "";
-    const heal = t.heal ? `<p><strong>治愈评级：</strong>${t.heal}</p>` : "";
-    const kd = t.keywordDanger
-      ? `<p><strong>危险关键词：</strong>「${t.keywordDanger}」</p>`
-      : "";
-    const kh = t.keywordHappy
-      ? `<p><strong>幸福关键词：</strong>「${t.keywordHappy}」</p>`
-      : "";
-    const ks = t.keywordSafe
-      ? `<p><strong>安全关键词：</strong>「${t.keywordSafe}」</p>`
-      : "";
+    if (!t) return `<p class="muted">未知类型：${key}</p>`;
     const img = t.image
       ? `<img class="boss-img" src="${t.image}" alt="${t.code} · ${t.name}" loading="lazy" />`
       : "";
     return `
       ${img}
       <h3>${t.code}｜${t.name}</h3>
-      <p><strong>性格描述：</strong>${t.desc}</p>
-      <p><strong>典型行为：</strong>${t.behavior}</p>
-      ${horror}${luck}${heal}
-      ${kd}${kh}${ks}
+      <p class="locked-desc">${t.desc || ""}</p>
     `;
   }
 
-  function showResults() {
+  async function reportFinishToBackend(main, sub) {
+    if (!window.BossAPI) return;
+    try {
+      if (!state.sid) {
+        const r = await window.BossAPI.session.start();
+        state.sid = r.sid;
+        window.BossAPI.sid.save(state.sid);
+      }
+      await window.BossAPI.session.finish({
+        sid: state.sid,
+        mainType: main,
+        subType: sub || null,
+        dim: { E: state.dim.E, C: state.dim.C, T: state.dim.T, M: state.dim.M },
+        answers: state.answerTrail,
+      });
+    } catch (err) {
+      console.warn("[boss-sbti] finish report failed", err);
+    }
+  }
+
+  function showLockedPreview() {
     showScreen("screen-result");
     const { main, sub } = resolveMainType();
-    el("result-main").innerHTML = renderTypeCard(main);
-    const subHtml =
-      sub && sub !== main && state.types[sub] > 0
-        ? `<div class="sub-card"><h4>相似人格</h4>${renderTypeCard(sub)}</div>`
-        : "";
-    el("result-sub").innerHTML = subHtml;
+    state.resolved = { main, sub };
+
     const e = dimToStars("E"),
       c = dimToStars("C"),
       t = dimToStars("T"),
       m = dimToStars("M");
+
+    el("result-main").innerHTML = renderLockedCard(main);
+
+    el("result-sub").innerHTML = `
+      <div class="locked-meta">
+        <p><strong>危险关键词：</strong><span class="blur">长按识别老板说话……</span></p>
+        <p><strong>典型行为：</strong><span class="blur">他每天会做的那些骚操作……</span></p>
+        <p><strong>相似人格：</strong><span class="blur">另一种可能是谁？</span></p>
+      </div>
+    `;
+
     el("result-radar").innerHTML = `
       <h4>老板污染类型（四维由本题库分值区间归一化为 1–5 档）</h4>
       <p>${starLine(window.DIMENSION_LABELS.E, e, 5)}</p>
@@ -315,11 +335,51 @@
       <p>${starLine(window.DIMENSION_LABELS.T, t, 5)}</p>
       <p>${starLine(window.DIMENSION_LABELS.M, m, 5)}</p>
     `;
-    const adv =
-      (window.SURVIVAL_ADVICE && window.SURVIVAL_ADVICE[main]) ||
-      (window.SURVIVAL_ADVICE && window.SURVIVAL_ADVICE.DEFAULT) ||
-      "";
-    el("result-advice").textContent = adv;
+
+    el("result-advice").innerHTML = `
+      <div class="locked-advice">
+        <div class="lock-badge">
+          <span class="lock-icon" aria-hidden="true">🔒</span>
+          <strong>生存建议 / 完整画像已加锁</strong>
+        </div>
+        <p class="muted">支付 <strong>¥0.99</strong> 解锁：本次鉴定的完整画像、相似人格、危险关键词、恐怖/治愈评级、以及针对这类老板的生存建议（附专属转发链接，可发微信 / 朋友圈 / 小红书 / 抖音等）。</p>
+      </div>
+    `;
+
+    ensureUnlockCta();
+
+    reportFinishToBackend(main, sub);
+  }
+
+  function ensureUnlockCta() {
+    let cta = el("btn-unlock");
+    if (!cta) {
+      cta = document.createElement("button");
+      cta.type = "button";
+      cta.id = "btn-unlock";
+      cta.className = "primary unlock-cta";
+      cta.textContent = "立即解锁完整报告 · ¥0.99";
+      cta.addEventListener("click", onUnlock);
+      const retry = el("btn-retry");
+      retry.parentNode.insertBefore(cta, retry);
+    }
+  }
+
+  async function onUnlock() {
+    if (!state.sid) {
+      console.warn("[boss-sbti] no sid, finishing first");
+      if (!state.resolved) return;
+      await reportFinishToBackend(state.resolved.main, state.resolved.sub);
+    }
+    if (!window.BossPay) {
+      alert("支付组件未加载，请刷新页面重试。");
+      return;
+    }
+    window.BossPay.open(state.sid, {
+      onPaid: ({ sid }) => {
+        window.location.href = `/report.html?sid=${encodeURIComponent(sid)}`;
+      },
+    });
   }
 
   function resetQuiz() {
@@ -329,14 +389,25 @@
     state.resumeAfterRandom = null;
     state.branchMessage = "";
     state.randomInserted = 0;
+    state.answerTrail = [];
+    state.resolved = null;
     initTypeScores();
     state.currentId = "Q1";
   }
 
-  function startQuiz() {
+  async function startQuiz() {
     resetQuiz();
     showScreen("screen-quiz");
     renderQuestion();
+    if (window.BossAPI) {
+      try {
+        const r = await window.BossAPI.session.start();
+        state.sid = r.sid;
+        window.BossAPI.sid.save(state.sid);
+      } catch (err) {
+        console.warn("[boss-sbti] session start failed (offline mode)", err);
+      }
+    }
   }
 
   document.getElementById("btn-start").addEventListener("click", startQuiz);

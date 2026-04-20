@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>bosssbti::terminal</title>
+    <link rel="stylesheet" href="terminal.css" />
+    <meta name="bosssbti-api" content="https://api.bosssbti.com" />
+    <meta name="robots" content="noindex,nofollow" />
+  </head>
+  <body class="term">
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="term-header">
+      <span class="prompt">&gt; bosssbti::admin$</span>
+      <span class="blink">_</span>
+      <span class="term-right">
+        <span id="mode-badge" class="badge">mode: ?</span>
+        <button id="logout" class="term-btn" hidden>logout</button>
+      </span>
+    </header>
+
+    <main class="term-main">
+      <section id="login-panel" class="term-card" hidden>
+        <h2>// 管理员登录</h2>
+        <p class="muted">输入管理员密码以访问后台数据。</p>
+        <form id="login-form">
+          <input
+            id="password"
+            type="password"
+            class="term-input"
+            autocomplete="off"
+            placeholder="ADMIN_PASSWORD"
+            required
+          />
+          <button type="submit" class="term-btn primary">login</button>
+        </form>
+        <p id="login-error" class="err" hidden></p>
+      </section>
+
+      <section id="loading-panel" class="term-card">
+        <p class="muted">&gt; querying cloudflare d1 … <span class="blink">█</span></p>
+      </section>
+
+      <section id="dashboard" hidden>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">TESTS STARTED</div>
+            <div class="kpi-value" id="k-started">–</div>
+            <div class="kpi-delta" id="k-started-24h"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">COMPLETED</div>
+            <div class="kpi-value" id="k-completed">–</div>
+            <div class="kpi-delta" id="k-completed-24h"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">PAID</div>
+            <div class="kpi-value" id="k-paid">–</div>
+            <div class="kpi-delta" id="k-paid-24h"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">GMV (CNY)</div>
+            <div class="kpi-value" id="k-gmv">–</div>
+            <div class="kpi-delta" id="k-shares"></div>
+          </div>
+        </div>
+
+        <section class="term-card">
+          <h3>// 转化漏斗</h3>
+          <div class="funnel">
+            <div class="funnel-step">
+              <span class="funnel-label">启动</span>
+              <div class="funnel-bar"><div id="funnel-1" class="funnel-fill"></div></div>
+              <span class="funnel-val" id="funnel-1-val">–</span>
+            </div>
+            <div class="funnel-step">
+              <span class="funnel-label">完成</span>
+              <div class="funnel-bar"><div id="funnel-2" class="funnel-fill"></div></div>
+              <span class="funnel-val" id="funnel-2-val">–</span>
+            </div>
+            <div class="funnel-step">
+              <span class="funnel-label">付费</span>
+              <div class="funnel-bar"><div id="funnel-3" class="funnel-fill"></div></div>
+              <span class="funnel-val" id="funnel-3-val">–</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="term-card">
+          <h3>// 近 30 日趋势（完成 vs 付费）</h3>
+          <canvas id="chart-trend" width="960" height="240"></canvas>
+        </section>
+
+        <section class="term-card">
+          <h3>// 人格分布（28 种）</h3>
+          <canvas id="chart-types" width="960" height="260"></canvas>
+        </section>
+
+        <section class="term-card">
+          <h3>// 分享渠道</h3>
+          <canvas id="chart-shares" width="960" height="200"></canvas>
+        </section>
+
+        <section class="term-card">
+          <h3>// 最近订单</h3>
+          <div class="table-wrap">
+            <table class="term-table">
+              <thead>
+                <tr>
+                  <th>time</th>
+                  <th>order</th>
+                  <th>sid</th>
+                  <th>provider</th>
+                  <th class="num">cent</th>
+                  <th>status</th>
+                </tr>
+              </thead>
+              <tbody id="orders-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="term-card">
+          <h3>// 最近 session</h3>
+          <div class="table-wrap">
+            <table class="term-table">
+              <thead>
+                <tr>
+                  <th>created</th>
+                  <th>sid</th>
+                  <th>main</th>
+                  <th>sub</th>
+                  <th>completed</th>
+                  <th>paid</th>
+                </tr>
+              </thead>
+              <tbody id="sessions-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="api.js"></script>
+    <script src="terminal.js"></script>
+  </body>
+</html>
