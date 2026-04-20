@@ -1,12 +1,16 @@
 (function () {
   const MAINLINE = ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10", "Q11", "Q12"];
 
+  /* 四维破平局优先池；严格按照新版文档《老板SBTI测评小问卷_新版答题逻辑与结果.docx》第七节。*/
   const POOL_EXTRACT = {
-    E: ["SUCKER", "OTOT", "SAINT", "MONK", "CAKE", "MOON"],
+    E: ["SUCKER", "OTOT", "CAKE", "SAINT", "MONK", "MOON"],
     C: ["CCTV", "RING", "LEAVE", "KING", "CULT", "SHEET"],
-    T: ["PUAer", "TOXIC", "AUV", "MASK", "BOOM", "DADDY"],
-    W: ["TRASH", "NULL", "BRICK", "FOG", "FAKE", "ROACH", "CLOWN", "TEDX", "THIEF", "GHOST"],
+    T: ["PUAer", "AUV", "MASK", "BOOM", "DADDY"],
+    W: ["TRASH", "BRICK", "FOG", "FAKE", "ROACH", "TEDX", "THIEF"],
+    GOOD: ["GOLD", "COVER", "NURSE"],
   };
+
+  const GOOD_TYPES = new Set(POOL_EXTRACT.GOOD);
 
   const el = (id) => document.getElementById(id);
 
@@ -19,6 +23,7 @@
     resumeAfterRandom: null,
     branchMessage: "",
     dimBounds: { E: [0, 0], C: [0, 0], T: [0, 0], M: [0, 0] },
+    randomInserted: 0,
   };
 
   function initTypeScores() {
@@ -142,7 +147,9 @@
       return;
     }
     if (nav.op === "random") {
-      const sub = pickRandomQuestion();
+      /* 控制最多随机追加两道情境题，符合文档「第 6 题后随机出现 1–2 道」规范。*/
+      const allowed = state.randomInserted < 2;
+      const sub = allowed ? pickRandomQuestion() : null;
       if (!sub) {
         const fallback = nav.peek
           ? state.stack.length
@@ -159,7 +166,9 @@
       } else {
         state.stack.push(nav.resume);
       }
-      state.branchMessage = "系统正在随机追加一道情境鉴定题……";
+      state.randomInserted += 1;
+      state.branchMessage =
+        (window.RANDOM_HINT) || "系统正在随机追加一道情境鉴定题……";
       goTo(sub, true);
       return;
     }
@@ -168,7 +177,7 @@
   function nextMainlineAfter(id) {
     const i = MAINLINE.indexOf(id);
     if (i >= 0 && i + 1 < MAINLINE.length) return MAINLINE[i + 1];
-    return "Q8";
+    return "Q12";
   }
 
   function goTo(id, isBranchEntry) {
@@ -192,21 +201,52 @@
   }
 
   function sortedTypes() {
-    return Object.entries(state.types).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    return Object.entries(state.types).sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    );
   }
 
+  /**
+   * 结果判定三层结构（对齐新版文档第七节）：
+   *   1. 人格分优先：第一名 ≥ 第二名 + 3 直出
+   *   2. 好老板保护规则：GOLD/COVER/NURSE 之一进前二 且 M ≥ 12 且 E/C/T ≤ 0 直出
+   *   3. 四维破平局：E/C/T/M 对应优先池筛选
+   */
   function resolveMainType() {
     const arr = sortedTypes();
-    if (!arr.length || arr[0][1] <= 0) return { main: "NULL", sub: null };
+    if (!arr.length || arr[0][1] <= 0) {
+      return { main: "TRASH", sub: null };
+    }
     const [[t1, s1], [t2, s2] = [null, 0]] = arr;
-    if (!t2 || s2 <= 0 || s1 >= s2 + 3) return { main: t1, sub: t2 && s2 > 0 ? t2 : null };
-
     const E = state.dim.E,
       C = state.dim.C,
       T = state.dim.T,
       M = state.dim.M;
+
+    /* 好老板保护规则：当 GOLD/COVER/NURSE 之一位列前二，且四维呈现明确正向，
+     * 优先输出这位好老板，避免被少量轻微负面选项污染。*/
+    const goodProtected = (() => {
+      if (!(M >= 12 && E <= 0 && C <= 0 && T <= 0)) return null;
+      const topGood = arr.find(([k, s]) => GOOD_TYPES.has(k) && s > 0);
+      if (!topGood) return null;
+      const topIdx = arr.findIndex(([k]) => k === topGood[0]);
+      if (topIdx > 1) return null;
+      const other = arr.find(
+        ([k, s]) => k !== topGood[0] && s > 0 && GOOD_TYPES.has(k),
+      );
+      return { main: topGood[0], sub: other ? other[0] : null };
+    })();
+    if (goodProtected) return goodProtected;
+
+    if (!t2 || s2 <= 0 || s1 >= s2 + 3) {
+      return { main: t1, sub: t2 && s2 > 0 ? t2 : null };
+    }
+
+    /* 四维破平局：M 高且 E/C/T 低 → 好老板池；否则按 E/C/T 最高维度选池；
+     * 若 M 是最低值则进入低能管理池（W）。*/
     const emax = Math.max(E, C, T);
     const poolKey = (() => {
+      if (M >= 10 && E <= 0 && C <= 0 && T <= 0) return "GOOD";
       if (M <= Math.min(E, C, T)) return "W";
       if (E >= C && E >= T && E === emax) return "E";
       if (C >= E && C >= T && C === emax) return "C";
@@ -215,9 +255,11 @@
     })();
 
     const pool = POOL_EXTRACT[poolKey];
-    const top = arr.filter(([k]) => pool.includes(k));
+    const top = arr.filter(([k]) => pool.includes(k) && state.types[k] > 0);
     if (top.length) {
-      top.sort((a, b) => b[1] - a[1] || pool.indexOf(a[0]) - pool.indexOf(b[0]));
+      top.sort(
+        (a, b) => b[1] - a[1] || pool.indexOf(a[0]) - pool.indexOf(b[0]),
+      );
       return { main: top[0][0], sub: top[1] ? top[1][0] : t2 };
     }
     return { main: t1, sub: t2 };
@@ -231,10 +273,20 @@
     const horror = t.horror ? `<p><strong>恐怖评级：</strong>${t.horror}</p>` : "";
     const luck = t.luck ? `<p><strong>好运评级：</strong>${t.luck}</p>` : "";
     const heal = t.heal ? `<p><strong>治愈评级：</strong>${t.heal}</p>` : "";
-    const kd = t.keywordDanger ? `<p><strong>危险关键词：</strong>「${t.keywordDanger}」</p>` : "";
-    const kh = t.keywordHappy ? `<p><strong>幸福关键词：</strong>「${t.keywordHappy}」</p>` : "";
-    const ks = t.keywordSafe ? `<p><strong>安全关键词：</strong>「${t.keywordSafe}」</p>` : "";
+    const kd = t.keywordDanger
+      ? `<p><strong>危险关键词：</strong>「${t.keywordDanger}」</p>`
+      : "";
+    const kh = t.keywordHappy
+      ? `<p><strong>幸福关键词：</strong>「${t.keywordHappy}」</p>`
+      : "";
+    const ks = t.keywordSafe
+      ? `<p><strong>安全关键词：</strong>「${t.keywordSafe}」</p>`
+      : "";
+    const img = t.image
+      ? `<img class="boss-img" src="${t.image}" alt="${t.code} · ${t.name}" loading="lazy" />`
+      : "";
     return `
+      ${img}
       <h3>${t.code}｜${t.name}</h3>
       <p><strong>性格描述：</strong>${t.desc}</p>
       <p><strong>典型行为：</strong>${t.behavior}</p>
@@ -264,9 +316,9 @@
       <p>${starLine(window.DIMENSION_LABELS.M, m, 5)}</p>
     `;
     const adv =
-      window.SURVIVAL_ADVICE[main] ||
-      (main === "LEAVE" ? window.SURVIVAL_ADVICE.LEAVE : null) ||
-      window.SURVIVAL_ADVICE.DEFAULT;
+      (window.SURVIVAL_ADVICE && window.SURVIVAL_ADVICE[main]) ||
+      (window.SURVIVAL_ADVICE && window.SURVIVAL_ADVICE.DEFAULT) ||
+      "";
     el("result-advice").textContent = adv;
   }
 
@@ -276,6 +328,7 @@
     state.dim = { E: 0, C: 0, T: 0, M: 0 };
     state.resumeAfterRandom = null;
     state.branchMessage = "";
+    state.randomInserted = 0;
     initTypeScores();
     state.currentId = "Q1";
   }

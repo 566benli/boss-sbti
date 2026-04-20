@@ -1,5 +1,8 @@
 # 老板 SBTI（静态页）
 
+> 2026-04 更新：题库 / 图鉴 / 判定引擎已对齐《老板SBTI图鉴 new.docx》与《老板SBTI测评小问卷_新版答题逻辑与结果.docx》。结果池从 30 种缩减为 28 种（删除 NULL/CLOWN/GHOST/TOXIC），新增 Q25 感恩教育、Q26 企业文化朝圣、Q27 表格奴隶主、Q28 末代皇帝；引擎加入「好老板保护规则」。24 张老板插画已随 docx 导入到 `assets/bosses/<CODE>.jpg`。
+
+
 内容来源：《老板SBTI图鉴》题库与图鉴条目。纯 HTML/CSS/JS，无构建步骤。
 
 - 正式域名：**https://bosssbti.com/**（及 `https://www.bosssbti.com/`）
