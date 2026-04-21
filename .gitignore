@@ -10,3 +10,8 @@ _docx_tmp/
 _worker/node_modules/
 _worker/.wrangler/
 _worker/.dev.vars
+_worker/*.json.tmp
+_worker/resp_*.json
+_worker/body.json
+_worker/cookie.txt
+_worker/tmp.json
