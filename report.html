@@ -14,6 +14,14 @@
     </header>
 
     <main>
+      <section id="pay-success-banner" class="pay-success-banner" hidden>
+        <div class="pay-success-icon">✅</div>
+        <div class="pay-success-text">
+          <strong>支付成功！</strong>
+          <span>你的完整鉴定报告已解锁，可下载保存。</span>
+        </div>
+      </section>
+
       <section id="report-loading" class="card">
         <p class="muted">正在拉取你的完整鉴定报告…</p>
       </section>
@@ -25,15 +33,28 @@
       </section>
 
       <section id="report-body" class="card" hidden>
+        <div class="report-download-top">
+          <button type="button" id="btn-download-top" class="primary report-download-cta">
+            📥 下载完整鉴定报告（PNG 长图）
+          </button>
+          <p class="muted small" id="download-hint">保存到相册 / 云盘，随时查看，也可以直接发给朋友。</p>
+        </div>
+
         <div id="report-main" class="result-block"></div>
         <div id="report-sub"></div>
         <div id="report-radar" class="result-block"></div>
         <div id="report-advice" class="advice"></div>
 
+        <div class="report-actions">
+          <button type="button" id="btn-download-bottom" class="primary report-download-cta">
+            📥 下载完整鉴定报告（PNG 长图）
+          </button>
+        </div>
+
         <div class="share-section">
           <h3>转发这份报告</h3>
-          <p class="muted">生成一张带鉴定结果 + 二维码的长图，粘到微信 / 朋友圈 / 小红书 / 抖音 / QQ / 微博 等任何平台。</p>
-          <button type="button" id="btn-share-poster" class="primary share-cta" style="width:100%;margin-top:0.6rem">📸 生成分享长图 · 发给朋友看</button>
+          <p class="muted">或者生成一张带鉴定结果 + 二维码的分享长图，粘到微信 / 朋友圈 / 小红书 / 抖音 / QQ / 微博 等任何平台。</p>
+          <button type="button" id="btn-share-poster" class="secondary share-cta" style="width:100%;margin-top:0.6rem">📸 打开分享长图（带平台一键选）</button>
         </div>
 
         <button type="button" id="btn-home" class="secondary" style="margin-top:1rem">返回首页</button>
@@ -153,12 +174,33 @@
             T: toStars("T", d.T || 0),
             M: toStars("M", d.M || 0),
           };
+          const posterCtx = { main, sub, dimStars, url: shareUrl, sid };
+
           el("btn-share-poster").addEventListener("click", () => {
             if (!window.BossPoster) return;
-            window.BossPoster.open({
-              main, sub, dimStars, url: shareUrl, sid,
-            });
+            window.BossPoster.open(posterCtx);
           });
+
+          async function directDownload(btn) {
+            if (!window.BossPoster) return;
+            const original = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "📥 生成中…";
+            try {
+              await window.BossPoster.downloadOnly(posterCtx);
+            } finally {
+              btn.disabled = false;
+              btn.textContent = original;
+            }
+          }
+          el("btn-download-top").addEventListener("click", (e) => directDownload(e.currentTarget));
+          el("btn-download-bottom").addEventListener("click", (e) => directDownload(e.currentTarget));
+
+          const fromParam = new URL(location.href).searchParams.get("from");
+          if (fromParam !== "resume") {
+            const banner = el("pay-success-banner");
+            if (banner) banner.hidden = false;
+          }
 
           el("btn-home").addEventListener("click", () => { location.href = "/"; });
         }

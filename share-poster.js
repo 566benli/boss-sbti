@@ -429,5 +429,21 @@
     showModal(poster, { ...ctx, url, shareText, boss: BOSS });
   }
 
-  window.BossPoster = { open, generate, showModal };
+  async function downloadOnly(ctx) {
+    const url = ctx.url || `${location.origin}/${ctx.sid ? `?from=${encodeURIComponent(ctx.sid)}` : ""}`;
+    let poster;
+    try {
+      poster = await generate({ main: ctx.main, sub: ctx.sub, dimStars: ctx.dimStars, url });
+    } catch (err) {
+      console.warn("[boss-sbti] downloadOnly failed", err);
+      toastSafe("下载失败，请稍后重试");
+      return false;
+    }
+    downloadBlob(poster.dataUrl, poster.blob, "老板SBTI-鉴定报告.png");
+    trackSafe(ctx.sid, "download");
+    toastSafe("鉴定报告已下载");
+    return true;
+  }
+
+  window.BossPoster = { open, generate, showModal, downloadOnly };
 })();

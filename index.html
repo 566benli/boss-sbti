@@ -14,6 +14,12 @@
     </header>
 
     <main>
+      <section id="resume-banner" class="resume-banner" hidden>
+        <div class="resume-banner-text">🎉 你有一份已解锁的完整鉴定报告</div>
+        <a id="resume-banner-link" class="resume-banner-cta" href="/report.html">查看 / 下载 →</a>
+        <button type="button" id="resume-banner-close" class="resume-banner-close" aria-label="关闭">×</button>
+      </section>
+
       <section id="screen-landing" class="card">
         <figure class="hero-single" aria-label="加油，把公司干倒闭！">
           <img src="assets/hero-boom.png" alt="加油，把公司干倒闭！" loading="eager" />
@@ -57,5 +63,32 @@
     <script src="share.js"></script>
     <script src="share-poster.js"></script>
     <script src="app.js"></script>
+    <script>
+      /* 检测到已付费 sid 时，在首页顶部展示「查看已解锁报告」入口。 */
+      (function () {
+        const BANNER_DISMISSED_KEY = "BOSSSBTI_RESUME_DISMISS_SID";
+        const banner = document.getElementById("resume-banner");
+        const link = document.getElementById("resume-banner-link");
+        const closeBtn = document.getElementById("resume-banner-close");
+        if (!banner || !link || !closeBtn || !window.BossAPI) return;
+
+        const sid = window.BossAPI.sid.load();
+        if (!sid) return;
+
+        let dismissed = null;
+        try { dismissed = localStorage.getItem(BANNER_DISMISSED_KEY); } catch {}
+        if (dismissed === sid) return;
+
+        window.BossAPI.report.full(sid).then(() => {
+          link.href = `/report.html?sid=${encodeURIComponent(sid)}&from=resume`;
+          banner.hidden = false;
+        }).catch(() => { /* 未付费 or 错误：不显示 */ });
+
+        closeBtn.addEventListener("click", () => {
+          banner.hidden = true;
+          try { localStorage.setItem(BANNER_DISMISSED_KEY, sid); } catch {}
+        });
+      })();
+    </script>
   </body>
 </html>
