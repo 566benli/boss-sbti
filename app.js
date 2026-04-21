@@ -352,41 +352,33 @@
     const { main, sub } = resolveMainType();
     state.resolved = { main, sub };
 
-    const e = dimToStars("E"),
-      c = dimToStars("C"),
-      t = dimToStars("T"),
-      m = dimToStars("M");
-
-    el("result-main").innerHTML = renderLockedCard(main);
-
-    el("result-sub").innerHTML = `
-      <div class="locked-meta">
-        <p><strong>危险关键词：</strong><span class="blur">长按识别老板说话……</span></p>
-        <p><strong>典型行为：</strong><span class="blur">他每天会做的那些骚操作……</span></p>
-        <p><strong>相似人格：</strong><span class="blur">另一种可能是谁？</span></p>
+    /* 完全加密：答完题后不暴露任何结果信息（人格代码 / 名称 / 插画 / 描述 / 四维），
+     * 报告只在付款后的 report.html 呈现。这样解锁动机更强，也避免「看到结果就不付款」。*/
+    el("result-main").innerHTML = `
+      <div class="locked-gate">
+        <div class="lock-big-icon" aria-hidden="true">🔒</div>
+        <h3>鉴定完成 · 报告已加密归档</h3>
+        <p class="muted lock-intro">你老板的完整物种画像已生成，付款后立即查看</p>
+        <ul class="lock-benefits">
+          <li><span class="lock-check">✓</span><span>老板人格 CODE + 中文名 + 专属插画 + 性格描述</span></li>
+          <li><span class="lock-check">✓</span><span>四维污染评级：榨取 / 控制 / 精神毒性 / 管理成熟度</span></li>
+          <li><span class="lock-check">✓</span><span>危险关键词：他说什么话 = 什么信号</span></li>
+          <li><span class="lock-check">✓</span><span>典型行为 & 相似人格对照</span></li>
+          <li><span class="lock-check">✓</span><span>针对这类老板的生存建议</span></li>
+          <li><span class="lock-check">✓</span><span>专属转发链接 + 分享长图海报（微信 / 朋友圈 / 小红书 / 抖音 / QQ 等）</span></li>
+        </ul>
+        <p class="lock-price">¥<span class="lock-price-amount">0.99</span></p>
+        <p class="lock-price-note">一次鉴定 · 永久可查 · 可分享</p>
       </div>
     `;
-
-    el("result-radar").innerHTML = `
-      <h4>老板污染类型（四维由本题库分值区间归一化为 1–5 档）</h4>
-      <p>${starLine(window.DIMENSION_LABELS.E, e, 5)}</p>
-      <p>${starLine(window.DIMENSION_LABELS.C, c, 5)}</p>
-      <p>${starLine(window.DIMENSION_LABELS.T, t, 5)}</p>
-      <p>${starLine(window.DIMENSION_LABELS.M, m, 5)}</p>
-    `;
-
-    el("result-advice").innerHTML = `
-      <div class="locked-advice">
-        <div class="lock-badge">
-          <span class="lock-icon" aria-hidden="true">🔒</span>
-          <strong>生存建议 / 完整画像已加锁</strong>
-        </div>
-        <p class="muted">支付 <strong>¥0.99</strong> 解锁：本次鉴定的完整画像、相似人格、危险关键词、恐怖/治愈评级、以及针对这类老板的生存建议（附专属转发链接，可发微信 / 朋友圈 / 小红书 / 抖音等）。</p>
-      </div>
-    `;
+    el("result-sub").innerHTML = "";
+    el("result-radar").innerHTML = "";
+    el("result-advice").innerHTML = "";
 
     ensureUnlockCta();
-    ensureShareCta();
+    /* 分享入口不再出现在解锁前（没有结果可分享）；report.html 才挂分享长图按钮。*/
+    const oldShare = el("btn-share-poster");
+    if (oldShare) oldShare.remove();
 
     reportFinishToBackend(main, sub);
   }
@@ -403,36 +395,6 @@
       const retry = el("btn-retry");
       retry.parentNode.insertBefore(cta, retry);
     }
-  }
-
-  function ensureShareCta() {
-    let cta = el("btn-share-poster");
-    if (!cta) {
-      cta = document.createElement("button");
-      cta.type = "button";
-      cta.id = "btn-share-poster";
-      cta.className = "secondary share-cta";
-      cta.innerHTML = "📸 生成分享长图 · 发给朋友看";
-      cta.addEventListener("click", onShare);
-      const retry = el("btn-retry");
-      retry.parentNode.insertBefore(cta, retry);
-    }
-  }
-
-  function onShare() {
-    if (!state.resolved || !window.BossPoster) return;
-    const { main, sub } = state.resolved;
-    const dimStars = {
-      E: dimToStars("E"),
-      C: dimToStars("C"),
-      T: dimToStars("T"),
-      M: dimToStars("M"),
-    };
-    const sid = state.sid || "";
-    const url = sid
-      ? `${location.origin}/?from=${encodeURIComponent(sid)}`
-      : `${location.origin}/`;
-    window.BossPoster.open({ main, sub, dimStars, url, sid });
   }
 
   async function onUnlock() {
