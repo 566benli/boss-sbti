@@ -3,6 +3,8 @@ import { ok, error, nowMs, readJsonSafe } from "../lib/util.js";
 const PLATFORMS = new Set([
   "copy", "wechat", "moments", "qq", "weibo", "tg", "x",
   "douyin", "xhs", "ins",
+  /* 长图海报流程新增：用户下载 PNG / 通过 navigator.share 触发系统面板 */
+  "download", "native",
 ]);
 
 export async function shareClick(request, env) {
