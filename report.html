@@ -89,8 +89,8 @@
             ? `<img class="boss-img" src="${t.image}" alt="${t.code} · ${t.name}" loading="lazy" />`
             : "";
           return `
+            <h3 class="boss-title"><span class="boss-code">${t.code}</span><span class="boss-sep">｜</span><span class="boss-name">${t.name}</span></h3>
             ${img}
-            <h3>${t.code}｜${t.name}</h3>
             <p><strong>性格描述：</strong>${t.desc || ""}</p>
             <p><strong>典型行为：</strong>${t.behavior || ""}</p>
             ${horror}${luck}${heal}

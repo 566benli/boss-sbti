@@ -21,13 +21,39 @@
     dim: { E: 0, C: 0, T: 0, M: 0 },
     types: {},
     resumeAfterRandom: null,
-    branchMessage: "",
     dimBounds: { E: [0, 0], C: [0, 0], T: [0, 0], M: [0, 0] },
     randomInserted: 0,
     sid: null,
     answerTrail: [],
     resolved: null,
+    history: [],
   };
+
+  /* 记录"作答前"的完整状态，便于「上一题」原子回退：
+   * 改答案后跳题路径可能变化（goto/insert/random 不同）→ 全量恢复比补偿式回退更安全。*/
+  function snapshotState() {
+    return {
+      currentId: state.currentId,
+      stack: state.stack.slice(),
+      answered: new Set(state.answered),
+      dim: { ...state.dim },
+      types: { ...state.types },
+      resumeAfterRandom: state.resumeAfterRandom,
+      randomInserted: state.randomInserted,
+      answerTrail: state.answerTrail.slice(),
+    };
+  }
+
+  function restoreSnapshot(snap) {
+    state.currentId = snap.currentId;
+    state.stack = snap.stack.slice();
+    state.answered = new Set(snap.answered);
+    state.dim = { ...snap.dim };
+    state.types = { ...snap.types };
+    state.resumeAfterRandom = snap.resumeAfterRandom;
+    state.randomInserted = snap.randomInserted;
+    state.answerTrail = snap.answerTrail.slice();
+  }
 
   function initTypeScores() {
     window.TYPE_SCORE_KEYS.forEach((k) => {
@@ -96,10 +122,6 @@
     });
   }
 
-  function branchHintFor(id) {
-    return (window.BRANCH_HINTS && window.BRANCH_HINTS[id]) || "";
-  }
-
   function renderQuestion() {
     const q = window.QUIZ_QUESTIONS[state.currentId];
     if (!q) return;
@@ -122,12 +144,32 @@
     const idx = MAINLINE.indexOf(q.id);
     el("quiz-progress").textContent =
       idx >= 0 ? `主线进度：第 ${idx + 1} / ${MAINLINE.length} 题` : `追加题：${q.id}`;
-    el("branch-banner").textContent = state.branchMessage || "";
-    el("branch-banner").hidden = !state.branchMessage;
-    state.branchMessage = "";
+    renderNavControls();
+  }
+
+  function renderNavControls() {
+    const host = el("quiz-nav");
+    if (!host) return;
+    host.innerHTML = "";
+    if (!state.history.length) return;
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "secondary back-btn";
+    back.textContent = "← 上一题（可改答案）";
+    back.addEventListener("click", goBack);
+    host.appendChild(back);
+  }
+
+  function goBack() {
+    const snap = state.history.pop();
+    if (!snap) return;
+    restoreSnapshot(snap);
+    /* 回到上一题后，允许重选：如路径不同（goto/insert/random 目标变化）会自然跳到新题。*/
+    renderQuestion();
   }
 
   function onChoose(option, question, optionIndex) {
+    state.history.push(snapshotState());
     applyOption(option, question, optionIndex);
     const nav = parseNext(option.next);
     if (nav.op === "finish") {
@@ -152,7 +194,6 @@
     }
     if (nav.op === "insert") {
       state.stack.push(nav.resume);
-      state.branchMessage = branchHintFor(nav.target);
       goTo(nav.target, true);
       return;
     }
@@ -177,8 +218,6 @@
         state.stack.push(nav.resume);
       }
       state.randomInserted += 1;
-      state.branchMessage =
-        (window.RANDOM_HINT) || "系统正在随机追加一道情境鉴定题……";
       goTo(sub, true);
       return;
     }
@@ -282,8 +321,8 @@
       ? `<img class="boss-img" src="${t.image}" alt="${t.code} · ${t.name}" loading="lazy" />`
       : "";
     return `
+      <h3 class="boss-title"><span class="boss-code">${t.code}</span><span class="boss-sep">｜</span><span class="boss-name">${t.name}</span></h3>
       ${img}
-      <h3>${t.code}｜${t.name}</h3>
       <p class="locked-desc">${t.desc || ""}</p>
     `;
   }
@@ -387,10 +426,10 @@
     state.answered.clear();
     state.dim = { E: 0, C: 0, T: 0, M: 0 };
     state.resumeAfterRandom = null;
-    state.branchMessage = "";
     state.randomInserted = 0;
     state.answerTrail = [];
     state.resolved = null;
+    state.history = [];
     initTypeScores();
     state.currentId = "Q1";
   }
