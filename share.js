@@ -146,5 +146,14 @@
     containerEl.appendChild(grid);
   }
 
-  window.BossShare = { mount, platforms: PLATFORMS };
+  window.BossShare = {
+    mount,
+    platforms: PLATFORMS,
+    go,
+    track,
+    copyText,
+    toast,
+    labelFor,
+    qrUrl,
+  };
 })();

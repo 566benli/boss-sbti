@@ -386,6 +386,7 @@
     `;
 
     ensureUnlockCta();
+    ensureShareCta();
 
     reportFinishToBackend(main, sub);
   }
@@ -402,6 +403,36 @@
       const retry = el("btn-retry");
       retry.parentNode.insertBefore(cta, retry);
     }
+  }
+
+  function ensureShareCta() {
+    let cta = el("btn-share-poster");
+    if (!cta) {
+      cta = document.createElement("button");
+      cta.type = "button";
+      cta.id = "btn-share-poster";
+      cta.className = "secondary share-cta";
+      cta.innerHTML = "📸 生成分享长图 · 发给朋友看";
+      cta.addEventListener("click", onShare);
+      const retry = el("btn-retry");
+      retry.parentNode.insertBefore(cta, retry);
+    }
+  }
+
+  function onShare() {
+    if (!state.resolved || !window.BossPoster) return;
+    const { main, sub } = state.resolved;
+    const dimStars = {
+      E: dimToStars("E"),
+      C: dimToStars("C"),
+      T: dimToStars("T"),
+      M: dimToStars("M"),
+    };
+    const sid = state.sid || "";
+    const url = sid
+      ? `${location.origin}/?from=${encodeURIComponent(sid)}`
+      : `${location.origin}/`;
+    window.BossPoster.open({ main, sub, dimStars, url, sid });
   }
 
   async function onUnlock() {

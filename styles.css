@@ -598,6 +598,134 @@ h2 {
   cursor: pointer;
 }
 
+/* ---------- share poster modal ---------- */
+.share-poster-host {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.share-poster-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.share-poster-card {
+  position: relative;
+  width: min(440px, 100%);
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem 1.1rem 1.2rem;
+  margin: 1rem 0 3rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.share-poster-close {
+  position: absolute;
+  right: 0.6rem;
+  top: 0.35rem;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.share-poster-close:hover {
+  color: var(--text);
+}
+
+.share-poster-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+}
+
+.share-poster-hint {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.share-poster-preview {
+  background: #0b0e14;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem;
+  text-align: center;
+  max-height: 420px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.share-poster-preview img {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 6px;
+  user-select: none;
+  -webkit-touch-callout: default;
+}
+
+.share-poster-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.share-poster-actions button {
+  flex: 1;
+  margin-top: 0;
+  padding: 0.7rem 0.6rem;
+  font-size: 0.95rem;
+}
+
+.share-poster-sub {
+  margin: 0.95rem 0 0.4rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.share-poster-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+}
+
+@media (max-width: 520px) {
+  .share-poster-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .share-poster-preview {
+    max-height: 340px;
+  }
+}
+
+.share-poster-btn {
+  padding: 0.55rem 0.25rem;
+}
+
+.share-poster-btn .share-ico {
+  font-size: 1.25rem;
+}
+
+.share-poster-btn .share-label {
+  font-size: 0.72rem;
+}
+
+.share-cta {
+  margin-top: 0.7rem;
+}
+
 /* ---------- toast ---------- */
 .boss-toast {
   position: fixed;

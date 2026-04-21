@@ -32,8 +32,8 @@
 
         <div class="share-section">
           <h3>转发这份报告</h3>
-          <p class="muted">把你老板的鉴定报告甩给他看看（或甩进员工群）。每一次点击都会被匿名统计到管理员后台。</p>
-          <div id="share-panel"></div>
+          <p class="muted">生成一张带鉴定结果 + 二维码的长图，粘到微信 / 朋友圈 / 小红书 / 抖音 / QQ / 微博 等任何平台。</p>
+          <button type="button" id="btn-share-poster" class="primary share-cta" style="width:100%;margin-top:0.6rem">📸 生成分享长图 · 发给朋友看</button>
         </div>
 
         <button type="button" id="btn-home" class="secondary" style="margin-top:1rem">返回首页</button>
@@ -48,6 +48,7 @@
     <script src="quiz-data.js"></script>
     <script src="api.js"></script>
     <script src="share.js"></script>
+    <script src="share-poster.js"></script>
     <script>
       (function () {
         const el = (id) => document.getElementById(id);
@@ -146,12 +147,17 @@
           el("report-body").hidden = false;
 
           const shareUrl = `${location.origin}/?from=${encodeURIComponent(sid)}`;
-          const t = (window.BOSS_TYPES || {})[main] || {};
-          window.BossShare.mount(el("share-panel"), {
-            sid,
-            url: shareUrl,
-            title: `我被鉴定为「${t.code || ""}｜${t.name || "某种老板"}」的下属`,
-            desc: "老板SBTI 帮我识别了老板这个物种，快来测测你自己的老板。",
+          const dimStars = {
+            E: toStars("E", d.E || 0),
+            C: toStars("C", d.C || 0),
+            T: toStars("T", d.T || 0),
+            M: toStars("M", d.M || 0),
+          };
+          el("btn-share-poster").addEventListener("click", () => {
+            if (!window.BossPoster) return;
+            window.BossPoster.open({
+              main, sub, dimStars, url: shareUrl, sid,
+            });
           });
 
           el("btn-home").addEventListener("click", () => { location.href = "/"; });
