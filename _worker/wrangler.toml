@@ -32,5 +32,16 @@ PRICE_CENT = "99"
 #   ADMIN_JWT_SECRET        —— HS256 签名密钥
 #   IP_HASH_SALT            —— 每日 IP 哈希盐
 #   MOCK_WEBHOOK_SECRET     —— Phase 1 demo 付费按钮签名
-#   XUNHUPAY_APPID          —— Phase 2
-#   XUNHUPAY_APPSECRET      —— Phase 2
+#
+# Phase 2（PayJS）新增：
+#   PAYJS_MCHID             —— PayJS 商户号（payjs.cn 后台）
+#   PAYJS_KEY               —— PayJS 通信密钥（payjs.cn 后台）
+# 可选环境变量（非敏感，可写在 [vars] 或 secret 里都行）：
+#   PAYJS_PREFER            —— "cashier"（默认）/ "native"
+#   PAYJS_NOTIFY_URL        —— 覆盖 notify 域名，默认 https://api.bosssbti.com
+#
+# 切真实支付时：
+#   1) wrangler secret put PAYJS_MCHID
+#   2) wrangler secret put PAYJS_KEY
+#   3) 把上面 [vars] 里的 PAYMENT_MODE 改成 "payjs"
+#   4) npx wrangler deploy

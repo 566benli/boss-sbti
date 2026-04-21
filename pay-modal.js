@@ -1,7 +1,13 @@
-/** 付费弹层 —— 通用：
- *   - 移动端：展示一个「前往支付」按钮 + 提示（点击跳转 payUrl）
- *   - 桌面端：展示 QR（如果 Provider 返回了 qrUrl）+「前往支付」链接
- *   - Phase 1 mock：显示「我已支付（Demo）」按钮，点击后直接 POST 到 mock webhook 解锁
+/** 付费弹层 —— 适配 Phase 1 mock 与 Phase 2 真实聚合支付（PayJS）。
+ *
+ * Provider 行为差异：
+ *   - mock：展示 "我已支付（Demo）" 按钮，点击后 POST /api/pay/webhook/mock 直接解锁。
+ *   - payjs（cashier 模式，默认）：拿到 cashier URL；
+ *       · 移动端：直接新开窗口跳转（也可改成同页跳转）；
+ *       · 桌面端：先展示"打开支付页面"按钮，同时生成 cashier URL 的二维码，用户扫码即付。
+ *   - payjs（native 模式）：后端额外返回 qrUrl（PayJS 托管的 QR 图片），直接 <img> 展示。
+ *
+ * 不论哪种，都通过轮询 /api/pay/status 感知订单状态，付成跳转 /report.html。
  * 暴露 window.BossPay.open(sid, { onPaid })。
  */
 (function () {
@@ -25,6 +31,13 @@
 
   function close(host) {
     if (host && host.parentNode) host.parentNode.removeChild(host);
+  }
+
+  /** 用第三方 QR 服务把 payUrl 压成二维码图片（桌面端扫码用）。
+   *  GitHub Pages / Workers 都没法在浏览器里跑 QR 本地库又不拉包，所以用 quickchart。 */
+  function qrForUrl(url) {
+    const sz = 220;
+    return `https://quickchart.io/qr?text=${encodeURIComponent(url)}&size=${sz}&margin=2`;
   }
 
   async function open(sid, opts) {
@@ -61,17 +74,51 @@
       return;
     }
 
-    statusLine.innerHTML = `订单号 <code>${order.orderId.slice(0, 8)}…</code> · ¥${order.priceYuan} · <strong>支持微信 / 支付宝</strong>`;
+    const providerTag = (order.provider || "mock").toLowerCase();
+    const providerLabel = providerTag === "payjs" ? "PayJS · 微信 / 支付宝"
+      : providerTag === "mock" ? "Demo 模式" : providerTag;
 
-    const payCta = el("a", {
-      class: "pay-modal-cta",
-      href: order.payUrl || "#",
-      target: isMobile() ? "_self" : "_blank",
-      rel: "noopener",
-    }, isMobile() ? "前往支付（微信 / 支付宝）" : "打开支付页面（新窗口）");
+    statusLine.innerHTML = `订单号 <code>${order.orderId.slice(0, 8)}…</code> · ¥${order.priceYuan} · <strong>${providerLabel}</strong>`;
 
-    box.appendChild(payCta);
+    // ---- 展示支付入口 ----
+    if (providerTag === "payjs" && isMobile()) {
+      // 移动端：把跳转 CTA 做明显，同时底部加一行提示
+      const payCta = el("a", {
+        class: "pay-modal-cta",
+        href: order.payUrl || "#",
+        target: "_blank",
+        rel: "noopener",
+      }, "前往支付（微信 / 支付宝）");
+      box.appendChild(payCta);
+      box.appendChild(el("p", { class: "pay-modal-hint" },
+        "支付完成后请返回本页面，系统会在几秒内自动解锁。"));
+    } else if (providerTag === "payjs") {
+      // 桌面端：展示 QR 让用户手机扫码
+      const qrImg = order.qrUrl || qrForUrl(order.payUrl);
+      const qrWrap = el("div", { class: "pay-modal-qr" }, [
+        el("img", { class: "pay-modal-qr-img", src: qrImg, alt: "支付二维码" }),
+        el("p", { class: "pay-modal-qr-tip" }, "用微信 / 支付宝扫码支付 ¥0.99"),
+      ]);
+      box.appendChild(qrWrap);
+      const payCta = el("a", {
+        class: "pay-modal-cta pay-modal-cta-ghost",
+        href: order.payUrl || "#",
+        target: "_blank",
+        rel: "noopener",
+      }, "或在新窗口打开收银台");
+      box.appendChild(payCta);
+    } else {
+      // mock / 其他：保持原有链接按钮样式
+      const payCta = el("a", {
+        class: "pay-modal-cta",
+        href: order.payUrl || "#",
+        target: isMobile() ? "_self" : "_blank",
+        rel: "noopener",
+      }, isMobile() ? "前往支付（微信 / 支付宝）" : "打开支付页面（新窗口）");
+      box.appendChild(payCta);
+    }
 
+    // ---- Demo 专用快捷解锁按钮 ----
     if (order.demo) {
       const hint = el("div", { class: "pay-modal-demo" }, [
         el("p", {}, "⚠ Demo 模式：目前后台尚未绑定真实商户号。点击下方按钮可直接解锁报告用于演示。"),

@@ -4,7 +4,7 @@
 
 import { withCors, preflight, text, error } from "./lib/util.js";
 import { startSession, finishSession, reportPreview, reportFull } from "./routes/session.js";
-import { createPayment, payStatus, mockWebhook, xunhupayWebhook } from "./routes/pay.js";
+import { createPayment, payStatus, mockWebhook, xunhupayWebhook, payjsWebhook } from "./routes/pay.js";
 import { shareClick } from "./routes/share.js";
 import {
   adminLogin, adminLogout, adminMe,
@@ -35,6 +35,7 @@ async function route(request, env, ctx) {
   if (m === "POST" && p === "/api/pay/create") return createPayment(request, env);
   if (m === "GET" && p === "/api/pay/status") return payStatus(request, env);
   if (m === "POST" && p === "/api/pay/webhook/mock") return mockWebhook(request, env);
+  if (m === "POST" && p === "/api/pay/webhook/payjs") return payjsWebhook(request, env);
   if (m === "POST" && p === "/api/pay/webhook/xunhupay") return xunhupayWebhook(request, env);
 
   if (m === "POST" && p === "/api/share/click") return shareClick(request, env);
