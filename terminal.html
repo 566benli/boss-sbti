@@ -43,6 +43,112 @@
       </section>
 
       <section id="dashboard" hidden>
+        <section class="term-card finance-card">
+          <div class="finance-head">
+            <h3>// 财务 · 虎皮椒钱包估算</h3>
+            <span class="muted small" id="fin-fee-note">（手续费按 0.38% 估算）</span>
+          </div>
+
+          <div class="finance-balance">
+            <div class="balance-big">
+              <span class="balance-label">预估可提余额</span>
+              <span class="balance-value" id="fin-balance">–</span>
+            </div>
+            <div class="balance-cta">
+              <a
+                id="fin-go-xh"
+                class="term-btn primary"
+                href="https://www.xunhupay.com"
+                target="_blank"
+                rel="noopener"
+              >🏦 去虎皮椒后台提现 →</a>
+              <button id="fin-record-btn" class="term-btn">📝 录入一笔已提现</button>
+            </div>
+          </div>
+
+          <div class="finance-breakdown">
+            <div class="fin-row">
+              <span>累计付费订单</span>
+              <span class="num" id="fin-paid-count">–</span>
+              <span class="num" id="fin-paid-gross">–</span>
+            </div>
+            <div class="fin-row minus">
+              <span>- 虎皮椒手续费（估）</span>
+              <span></span>
+              <span class="num" id="fin-provider-fee">–</span>
+            </div>
+            <div class="fin-row minus">
+              <span>- 已人工录入提现</span>
+              <span class="num" id="fin-w-count">–</span>
+              <span class="num" id="fin-w-gross">–</span>
+            </div>
+            <div class="fin-row total">
+              <span>= 预估余额</span>
+              <span></span>
+              <span class="num" id="fin-balance-dup">–</span>
+            </div>
+            <div class="fin-row sub">
+              <span>最近 30 天流水</span>
+              <span></span>
+              <span class="num" id="fin-revenue-month">–</span>
+            </div>
+            <div class="fin-row sub">
+              <span>最近 7 天流水</span>
+              <span></span>
+              <span class="num" id="fin-revenue-week">–</span>
+            </div>
+          </div>
+
+          <form id="fin-form" class="fin-form" hidden>
+            <h4>// 录入一笔已提现</h4>
+            <div class="fin-form-grid">
+              <label>
+                <span>从钱包扣款（元，必填）</span>
+                <input id="fin-gross" type="number" step="0.01" min="0.01" required placeholder="300.00" />
+              </label>
+              <label>
+                <span>实际到账（元，可选）</span>
+                <input id="fin-net" type="number" step="0.01" min="0" placeholder="299.40" />
+              </label>
+              <label>
+                <span>提现时间（可选，默认现在）</span>
+                <input id="fin-time" type="datetime-local" />
+              </label>
+              <label>
+                <span>虎皮椒流水号（可选）</span>
+                <input id="fin-ref" type="text" placeholder="XH20260421..." />
+              </label>
+              <label class="fin-full">
+                <span>备注</span>
+                <input id="fin-notes" type="text" placeholder="eg. 月结到银行卡" />
+              </label>
+            </div>
+            <div class="fin-form-actions">
+              <button type="submit" class="term-btn primary">保存</button>
+              <button type="button" id="fin-cancel" class="term-btn">取消</button>
+              <span id="fin-form-err" class="err" hidden></span>
+            </div>
+          </form>
+
+          <h4 class="finance-sub">// 最近提现记录</h4>
+          <div class="table-wrap">
+            <table class="term-table">
+              <thead>
+                <tr>
+                  <th>time</th>
+                  <th class="num">gross (元)</th>
+                  <th class="num">net (元)</th>
+                  <th class="num">fee (元)</th>
+                  <th>ref</th>
+                  <th>notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="fin-withdrawals-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-label">TESTS STARTED</div>

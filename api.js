@@ -76,6 +76,11 @@
       stats:    ()         => call("GET",  "/api/admin/stats"),
       orders:   (limit)    => call("GET",  `/api/admin/orders?limit=${limit || 50}`),
       sessions: (limit)    => call("GET",  `/api/admin/sessions?limit=${limit || 50}`),
+      finance:  {
+        summary:       ()        => call("GET",    "/api/admin/finance/summary"),
+        recordWithdraw:(payload) => call("POST",   "/api/admin/finance/withdraw", payload),
+        deleteWithdraw:(id)      => call("DELETE", `/api/admin/finance/withdraw?id=${id}`),
+      },
     },
     sid: { save: saveSid, load: loadSid, clear: clearSid },
   };

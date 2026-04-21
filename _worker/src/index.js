@@ -10,6 +10,7 @@ import {
   adminLogin, adminLogout, adminMe,
   adminStats, adminOrders, adminSessions,
 } from "./routes/admin.js";
+import { financeSummary, financeWithdraw, financeWithdrawDelete } from "./routes/finance.js";
 
 async function route(request, env, ctx) {
   const url = new URL(request.url);
@@ -46,6 +47,9 @@ async function route(request, env, ctx) {
   if (m === "GET" && p === "/api/admin/stats") return adminStats(request, env);
   if (m === "GET" && p === "/api/admin/orders") return adminOrders(request, env);
   if (m === "GET" && p === "/api/admin/sessions") return adminSessions(request, env);
+  if (m === "GET" && p === "/api/admin/finance/summary") return financeSummary(request, env);
+  if (m === "POST" && p === "/api/admin/finance/withdraw") return financeWithdraw(request, env);
+  if (m === "DELETE" && p === "/api/admin/finance/withdraw") return financeWithdrawDelete(request, env);
 
   return error(404, "NOT_FOUND", `no route for ${m} ${p}`);
 }

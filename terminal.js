@@ -70,12 +70,13 @@
 
   async function loadDashboard() {
     showDashboard();
-    let stats, orders, sessions;
+    let stats, orders, sessions, finance;
     try {
-      [stats, orders, sessions] = await Promise.all([
+      [stats, orders, sessions, finance] = await Promise.all([
         window.BossAPI.admin.stats(),
         window.BossAPI.admin.orders(50),
         window.BossAPI.admin.sessions(50),
+        window.BossAPI.admin.finance.summary(),
       ]);
     } catch (err) {
       if (err.status === 401) {
@@ -86,6 +87,7 @@
       return;
     }
 
+    renderFinance(finance);
     renderKpi(stats.kpi, stats.paymentMode);
     renderFunnel(stats.kpi);
     renderTrend(stats.trend || []);
@@ -93,6 +95,111 @@
     renderShares(stats.sharesByPlatform || []);
     renderOrders(orders.orders || []);
     renderSessions(sessions.sessions || []);
+  }
+
+  function fmtYuan(n) {
+    if (n === null || n === undefined) return "—";
+    const v = (Number(n) / 100).toFixed(2);
+    return `¥${v}`;
+  }
+
+  function renderFinance(f) {
+    el("fin-fee-note").textContent = `（手续费按 ${(f.feePct || 0.38).toFixed(2)}% 估算）`;
+    el("fin-balance").textContent = `¥${f.estimatedBalanceYuan}`;
+    el("fin-balance-dup").textContent = `¥${f.estimatedBalanceYuan}`;
+    el("fin-paid-count").textContent = `${f.paidCount} 笔`;
+    el("fin-paid-gross").textContent = `¥${f.grossPaidYuan}`;
+    el("fin-provider-fee").textContent = `¥${f.providerFeeEstYuan}`;
+    el("fin-w-count").textContent = `${f.withdrawCount} 次`;
+    el("fin-w-gross").textContent = `¥${f.totalWithdrawnGrossYuan}`;
+    el("fin-revenue-month").textContent = `¥${f.revenueMonth30dYuan}`;
+    el("fin-revenue-week").textContent = `¥${f.revenueWeek7dYuan}`;
+
+    const tbody = el("fin-withdrawals-tbody");
+    tbody.innerHTML = "";
+    (f.recent || []).forEach((w) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${fmtTime(w.withdrawnAt)}</td>
+        <td class="num">${fmtYuan(w.grossCent)}</td>
+        <td class="num">${fmtYuan(w.netCent)}</td>
+        <td class="num">${fmtYuan(w.feeCent)}</td>
+        <td><code>${w.refNo ? short(w.refNo, 16) : "—"}</code></td>
+        <td>${w.notes ? escapeHtml(w.notes) : "—"}</td>
+        <td><button class="term-btn small danger" data-wid="${w.id}">删除</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    if (!f.recent || !f.recent.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="muted">（尚未录入任何提现记录）</td></tr>`;
+    }
+    tbody.querySelectorAll("button[data-wid]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const wid = btn.getAttribute("data-wid");
+        if (!wid) return;
+        if (!confirm(`确认删除这条提现记录 #${wid}?`)) return;
+        try {
+          await window.BossAPI.admin.finance.deleteWithdraw(wid);
+          await refreshFinance();
+        } catch (e) { alert("删除失败：" + (e.message || e)); }
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  async function refreshFinance() {
+    try {
+      const f = await window.BossAPI.admin.finance.summary();
+      renderFinance(f);
+    } catch (e) { console.warn("refreshFinance failed:", e); }
+  }
+
+  function wireFinanceForm() {
+    const recordBtn = el("fin-record-btn");
+    const form = el("fin-form");
+    const cancelBtn = el("fin-cancel");
+    const errEl = el("fin-form-err");
+
+    recordBtn.addEventListener("click", () => {
+      form.hidden = false;
+      el("fin-gross").focus();
+    });
+    cancelBtn.addEventListener("click", () => {
+      form.hidden = true;
+      errEl.hidden = true;
+      form.reset();
+    });
+
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      errEl.hidden = true;
+      const grossYuan = el("fin-gross").value.trim();
+      const netYuan = el("fin-net").value.trim();
+      const timeLocal = el("fin-time").value.trim();
+      const refNo = el("fin-ref").value.trim();
+      const notes = el("fin-notes").value.trim();
+
+      const payload = { grossYuan };
+      if (netYuan) payload.netYuan = netYuan;
+      if (timeLocal) payload.withdrawnAt = new Date(timeLocal).getTime();
+      if (refNo) payload.refNo = refNo;
+      if (notes) payload.notes = notes;
+
+      try {
+        await window.BossAPI.admin.finance.recordWithdraw(payload);
+        form.hidden = true;
+        form.reset();
+        await refreshFinance();
+      } catch (err) {
+        errEl.hidden = false;
+        errEl.textContent = "! " + (err.message || err);
+      }
+    });
   }
 
   function renderKpi(k, mode) {
@@ -304,6 +411,7 @@
       doLogin(el("password").value);
     });
     el("logout").addEventListener("click", doLogout);
+    wireFinanceForm();
   }
 
   boot();

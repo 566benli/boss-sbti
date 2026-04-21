@@ -2,6 +2,11 @@ import { ok, error, readJsonSafe, signJwt, verifyJwt, parseCookies, setCookie } 
 
 const COOKIE = "bosssbti_admin";
 
+/** 导出给 finance.js 等其他路由用。 */
+export async function requireAdminAuth(request, env) {
+  return requireAdmin(request, env);
+}
+
 async function requireAdmin(request, env) {
   const cookies = parseCookies(request);
   const tok = cookies[COOKIE];
