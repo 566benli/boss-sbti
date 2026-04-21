@@ -401,3 +401,24 @@ canvas {
   .fin-row span:nth-child(2) { display: none; }
   .balance-value { font-size: 1.6rem; }
 }
+
+/* Users tab */
+.users-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.users-head h3 { margin: 0; }
+.users-search {
+  max-width: 320px;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+.acct-code {
+  color: var(--term-amber);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}

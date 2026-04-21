@@ -1,6 +1,8 @@
 /** 前端统一 API 封装。
  * 默认后端在 https://api.bosssbti.com；可以通过 <meta name="bosssbti-api"> 或
  * localStorage.BOSSSBTI_API_BASE 覆盖（便于本地 wrangler dev）。
+ *
+ * 所有请求默认带 cookie（credentials:"include"），账号系统依赖此 cookie 认证。
  */
 (function () {
   const DEFAULT_BASE = "https://api.bosssbti.com";
@@ -34,24 +36,20 @@
     return data || {};
   }
 
-  function saveSid(sid) {
-    try { localStorage.setItem("BOSSSBTI_SID", sid); } catch {}
-  }
-
-  function loadSid() {
-    try { return localStorage.getItem("BOSSSBTI_SID") || ""; } catch { return ""; }
-  }
-
-  function clearSid() {
-    try { localStorage.removeItem("BOSSSBTI_SID"); } catch {}
-  }
-
   window.BossAPI = {
     base: apiBase,
     get:  (p)    => call("GET",  p),
     post: (p, b) => call("POST", p, b || {}),
+    account: {
+      create: (payload) => call("POST", "/api/account/create", payload || {}),
+      login:  (payload) => call("POST", "/api/account/login", payload || {}),
+      logout: ()        => call("POST", "/api/account/logout", {}),
+      me:     ()        => call("GET",  "/api/account/me"),
+      update: (payload) => call("POST", "/api/account/update", payload || {}),
+      resume: (token)   => call("POST", "/api/account/resume", { token }),
+    },
     session: {
-      start:  ()       => call("POST", "/api/session/start"),
+      start:  ()        => call("POST", "/api/session/start", {}),
       finish: (payload) => call("POST", "/api/session/finish", payload),
     },
     report: {
@@ -76,12 +74,15 @@
       stats:    ()         => call("GET",  "/api/admin/stats"),
       orders:   (limit)    => call("GET",  `/api/admin/orders?limit=${limit || 50}`),
       sessions: (limit)    => call("GET",  `/api/admin/sessions?limit=${limit || 50}`),
+      users:    (limit, q) => call(
+        "GET",
+        `/api/admin/users?limit=${limit || 100}${q ? `&q=${encodeURIComponent(q)}` : ""}`,
+      ),
       finance:  {
         summary:       ()        => call("GET",    "/api/admin/finance/summary"),
         recordWithdraw:(payload) => call("POST",   "/api/admin/finance/withdraw", payload),
         deleteWithdraw:(id)      => call("DELETE", `/api/admin/finance/withdraw?id=${id}`),
       },
     },
-    sid: { save: saveSid, load: loadSid, clear: clearSid },
   };
 })();

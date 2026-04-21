@@ -32,6 +32,18 @@
         <a class="primary" href="/">返回解锁</a>
       </section>
 
+      <section id="report-unauth" class="card" hidden>
+        <h2>需要登录账号</h2>
+        <p class="muted">这份报告归属某个账号。请用当时测试的账号码登录后查看。</p>
+        <a class="primary" href="/login.html">去登录</a>
+      </section>
+
+      <section id="report-forbidden" class="card" hidden>
+        <h2>无权查看该报告</h2>
+        <p class="muted">该鉴定不属于当前账号。请切换到正确账号后再试。</p>
+        <a class="primary" href="/login.html">切换账号</a>
+      </section>
+
       <section id="report-body" class="card" hidden>
         <div class="report-download-top">
           <button type="button" id="btn-download-top" class="primary report-download-cta">
@@ -57,7 +69,7 @@
           <button type="button" id="btn-share-poster" class="secondary share-cta" style="width:100%;margin-top:0.6rem">📸 打开分享长图（带平台一键选）</button>
         </div>
 
-        <button type="button" id="btn-home" class="secondary" style="margin-top:1rem">返回首页</button>
+        <button type="button" id="btn-home" class="secondary" style="margin-top:1rem">返回主菜单（登出）</button>
       </section>
     </main>
 
@@ -76,7 +88,22 @@
 
         function getSid() {
           const u = new URL(location.href);
-          return u.searchParams.get("sid") || (window.BossAPI && window.BossAPI.sid.load()) || "";
+          return u.searchParams.get("sid") || "";
+        }
+
+        /* 微信内置浏览器付完款回跳可能丢失 cookie；用 URL 里的 rt token 换回 cookie。
+         * 一次性消耗后把 rt 从 URL 中去掉，防止截图泄露。*/
+        async function consumeResumeToken() {
+          const u = new URL(location.href);
+          const rt = u.searchParams.get("rt");
+          if (!rt) return;
+          try {
+            await window.BossAPI.account.resume(rt);
+          } catch (err) {
+            console.warn("[report] resume token rejected:", err);
+          }
+          u.searchParams.delete("rt");
+          history.replaceState(null, "", u.toString());
         }
 
         function starLine(label, filled, total) {
@@ -126,6 +153,8 @@
         }
 
         async function boot() {
+          await consumeResumeToken();
+
           const sid = getSid();
           if (!sid) {
             el("report-loading").hidden = true;
@@ -140,6 +169,10 @@
             el("report-loading").hidden = true;
             if (err.status === 402 || err.code === "PAYMENT_REQUIRED") {
               el("report-locked").hidden = false;
+            } else if (err.status === 401 || err.code === "UNAUTH") {
+              el("report-unauth").hidden = false;
+            } else if (err.status === 403 || err.code === "FORBIDDEN") {
+              el("report-forbidden").hidden = false;
             } else {
               el("report-loading").hidden = false;
               el("report-loading").innerHTML = `<p class="warn">加载失败：${err.message || err}</p><a class="secondary" href="/">返回首页</a>`;
@@ -202,7 +235,11 @@
             if (banner) banner.hidden = false;
           }
 
-          el("btn-home").addEventListener("click", () => { location.href = "/"; });
+          el("btn-home").addEventListener("click", async () => {
+            /* 产品约定：返回主菜单 = 登出当前账号 → 回登录页。*/
+            try { await window.BossAPI.account.logout(); } catch {}
+            location.href = "/login.html";
+          });
         }
 
         boot();

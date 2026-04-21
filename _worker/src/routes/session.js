@@ -1,13 +1,33 @@
 import { json, ok, error, uuid, nowMs, hashIp, readJsonSafe } from "../lib/util.js";
+import { requireAccount } from "./account.js";
+
+/** 读取 session 并在有 user_id 时校验归属。返回 { row, forbidden }。 */
+async function loadOwnedSession(env, sid, me) {
+  const row = await env.DB.prepare(
+    `SELECT id, user_id, completed_at, paid, paid_at,
+            main_type, sub_type, dim_e, dim_c, dim_t, dim_m
+     FROM sessions WHERE id = ?`,
+  ).bind(sid).first();
+  if (!row) return { row: null };
+  /* 老数据 user_id 为 NULL：向后兼容，允许任意访问；新数据必须匹配 */
+  if (row.user_id && (!me || me.id !== row.user_id)) {
+    return { row, forbidden: true };
+  }
+  return { row };
+}
 
 export async function startSession(request, env) {
+  const me = await requireAccount(request, env);
+  if (!me) return error(401, "UNAUTH", "请先登录账号再开始鉴定");
+
   const sid = uuid();
   const ua = (request.headers.get("user-agent") || "").slice(0, 240);
   const ipHash = await hashIp(request, env);
   await env.DB.prepare(
-    `INSERT INTO sessions (id, created_at, ua, ip_hash, paid) VALUES (?, ?, ?, ?, 0)`,
-  ).bind(sid, nowMs(), ua, ipHash).run();
-  return ok({ sid });
+    `INSERT INTO sessions (id, created_at, ua, ip_hash, paid, user_id)
+     VALUES (?, ?, ?, ?, 0, ?)`,
+  ).bind(sid, nowMs(), ua, ipHash, me.id).run();
+  return ok({ sid, userCode: me.code });
 }
 
 /** 提交完成的问卷：落库最终人格与四维 + 原始作答序列。 */
@@ -17,9 +37,10 @@ export async function finishSession(request, env) {
   const { sid, mainType, subType, dim, answers } = body;
   if (!mainType) return error(400, "BAD_REQUEST", "missing mainType");
 
-  const row = await env.DB.prepare(`SELECT id, completed_at FROM sessions WHERE id = ?`)
-    .bind(sid).first();
+  const me = await requireAccount(request, env);
+  const { row, forbidden } = await loadOwnedSession(env, sid, me);
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  if (forbidden) return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
 
   const e = Number(dim?.E || 0) | 0;
   const c = Number(dim?.C || 0) | 0;
@@ -41,11 +62,11 @@ export async function reportPreview(request, env) {
   const url = new URL(request.url);
   const sid = url.searchParams.get("sid");
   if (!sid) return error(400, "BAD_REQUEST", "missing sid");
-  const row = await env.DB.prepare(
-    `SELECT main_type, sub_type, dim_e, dim_c, dim_t, dim_m, paid, completed_at
-     FROM sessions WHERE id = ?`,
-  ).bind(sid).first();
+
+  const me = await requireAccount(request, env);
+  const { row, forbidden } = await loadOwnedSession(env, sid, me);
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  if (forbidden) return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
   if (!row.completed_at) return error(409, "NOT_COMPLETED", "session not finished yet");
   return ok({
     sid,
@@ -62,11 +83,11 @@ export async function reportFull(request, env) {
   const url = new URL(request.url);
   const sid = url.searchParams.get("sid");
   if (!sid) return error(400, "BAD_REQUEST", "missing sid");
-  const row = await env.DB.prepare(
-    `SELECT main_type, sub_type, dim_e, dim_c, dim_t, dim_m, paid, completed_at
-     FROM sessions WHERE id = ?`,
-  ).bind(sid).first();
+
+  const me = await requireAccount(request, env);
+  const { row, forbidden } = await loadOwnedSession(env, sid, me);
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  if (forbidden) return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
   if (!row.completed_at) return error(409, "NOT_COMPLETED", "session not finished yet");
   if (!row.paid) return error(402, "PAYMENT_REQUIRED", "unlock the full report first");
   return ok({

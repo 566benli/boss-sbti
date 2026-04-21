@@ -333,7 +333,6 @@
       if (!state.sid) {
         const r = await window.BossAPI.session.start();
         state.sid = r.sid;
-        window.BossAPI.sid.save(state.sid);
       }
       await window.BossAPI.session.finish({
         sid: state.sid,
@@ -344,6 +343,9 @@
       });
     } catch (err) {
       console.warn("[boss-sbti] finish report failed", err);
+      if (err && (err.status === 401 || err.code === "UNAUTH")) {
+        location.href = "/login.html";
+      }
     }
   }
 
@@ -435,16 +437,23 @@
       try {
         const r = await window.BossAPI.session.start();
         state.sid = r.sid;
-        window.BossAPI.sid.save(state.sid);
       } catch (err) {
-        console.warn("[boss-sbti] session start failed (offline mode)", err);
+        console.warn("[boss-sbti] session start failed", err);
+        if (err && (err.status === 401 || err.code === "UNAUTH")) {
+          location.href = "/login.html";
+        }
       }
     }
   }
 
   document.getElementById("btn-start").addEventListener("click", startQuiz);
-  document.getElementById("btn-retry").addEventListener("click", () => {
-    showScreen("screen-landing");
+  /* 「返回主菜单」= 登出当前账号 → 跳回登录页。
+   * 产品要求：同一账号重登会自动开始新测试，所以 retry 必须强制清 cookie。*/
+  document.getElementById("btn-retry").addEventListener("click", async () => {
+    try {
+      if (window.BossAPI) await window.BossAPI.account.logout();
+    } catch {}
+    location.href = "/login.html";
   });
 
   initTypeScores();

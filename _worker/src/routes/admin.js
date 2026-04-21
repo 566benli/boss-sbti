@@ -68,6 +68,10 @@ export async function adminStats(request, env) {
   const completed24h = await count(`SELECT COUNT(*) AS n FROM sessions WHERE completed_at >= ?`, d1);
   const paid24h = await count(`SELECT COUNT(*) AS n FROM sessions WHERE paid_at >= ?`, d1);
 
+  const usersTotal = await count(`SELECT COUNT(*) AS n FROM users`);
+  const users24h = await count(`SELECT COUNT(*) AS n FROM users WHERE created_at >= ?`, d1);
+  const users7d = await count(`SELECT COUNT(*) AS n FROM users WHERE created_at >= ?`, d7);
+
   const gmvRow = await env.DB.prepare(
     `SELECT COALESCE(SUM(amount_cent), 0) AS cents FROM orders WHERE status = 'paid'`,
   ).first();
@@ -107,6 +111,7 @@ export async function adminStats(request, env) {
     kpi: {
       started, completed, paid,
       started24h, completed24h, paid24h,
+      usersTotal, users24h, users7d,
       gmvCent, gmvYuan: (gmvCent / 100).toFixed(2),
       convFinish: started ? (completed / started) : 0,
       convPay: completed ? (paid / completed) : 0,
@@ -127,8 +132,14 @@ export async function adminOrders(request, env) {
   const url = new URL(request.url);
   const limit = Math.min(Number(url.searchParams.get("limit") || 50) | 0, 200);
   const rows = await env.DB.prepare(
-    `SELECT id, session_id, provider, amount_cent, status, created_at, paid_at
-     FROM orders ORDER BY created_at DESC LIMIT ?`,
+    `SELECT o.id AS id, o.session_id AS session_id, o.provider AS provider,
+            o.amount_cent AS amount_cent, o.status AS status,
+            o.created_at AS created_at, o.paid_at AS paid_at,
+            o.user_id AS user_id,
+            u.code AS user_code, u.nickname AS user_nickname
+     FROM orders o
+     LEFT JOIN users u ON u.id = o.user_id
+     ORDER BY o.created_at DESC LIMIT ?`,
   ).bind(limit).all();
   return ok({
     orders: (rows.results || []).map((r) => ({
@@ -139,6 +150,9 @@ export async function adminOrders(request, env) {
       status: r.status,
       createdAt: Number(r.created_at),
       paidAt: r.paid_at ? Number(r.paid_at) : null,
+      userId: r.user_id || null,
+      userCode: r.user_code || null,
+      userNickname: r.user_nickname || null,
     })),
   });
 }
@@ -150,8 +164,14 @@ export async function adminSessions(request, env) {
   const url = new URL(request.url);
   const limit = Math.min(Number(url.searchParams.get("limit") || 50) | 0, 200);
   const rows = await env.DB.prepare(
-    `SELECT id, created_at, completed_at, main_type, sub_type, paid, paid_at
-     FROM sessions ORDER BY created_at DESC LIMIT ?`,
+    `SELECT s.id AS id, s.created_at AS created_at, s.completed_at AS completed_at,
+            s.main_type AS main_type, s.sub_type AS sub_type,
+            s.paid AS paid, s.paid_at AS paid_at,
+            s.user_id AS user_id,
+            u.code AS user_code, u.nickname AS user_nickname
+     FROM sessions s
+     LEFT JOIN users u ON u.id = s.user_id
+     ORDER BY s.created_at DESC LIMIT ?`,
   ).bind(limit).all();
   return ok({
     sessions: (rows.results || []).map((r) => ({
@@ -162,6 +182,52 @@ export async function adminSessions(request, env) {
       subType: r.sub_type,
       paid: !!r.paid,
       paidAt: r.paid_at ? Number(r.paid_at) : null,
+      userId: r.user_id || null,
+      userCode: r.user_code || null,
+      userNickname: r.user_nickname || null,
+    })),
+  });
+}
+
+/** 用户维度：列出全部账号 + 测试/付款/GMV 统计。 */
+export async function adminUsers(request, env) {
+  const me = await requireAdmin(request, env);
+  if (!me) return error(401, "UNAUTH", "not logged in");
+
+  const url = new URL(request.url);
+  const limit = Math.min(Number(url.searchParams.get("limit") || 100) | 0, 500);
+  const q = (url.searchParams.get("q") || "").trim().toUpperCase();
+
+  let sql = `
+    SELECT u.id AS id, u.code AS code, u.nickname AS nickname,
+           u.created_at AS created_at, u.last_seen_at AS last_seen_at,
+           (SELECT COUNT(*) FROM sessions s WHERE s.user_id = u.id) AS sessions_count,
+           (SELECT COUNT(*) FROM sessions s WHERE s.user_id = u.id AND s.paid = 1) AS paid_count,
+           (SELECT COALESCE(SUM(o.amount_cent), 0) FROM orders o
+             WHERE o.user_id = u.id AND o.status = 'paid') AS gmv_cent
+    FROM users u
+  `;
+  const args = [];
+  if (q) {
+    sql += ` WHERE u.code LIKE ? OR UPPER(COALESCE(u.nickname, '')) LIKE ?`;
+    args.push(`%${q}%`, `%${q}%`);
+  }
+  sql += ` ORDER BY u.created_at DESC LIMIT ?`;
+  args.push(limit);
+
+  const rows = await env.DB.prepare(sql).bind(...args).all();
+  return ok({
+    users: (rows.results || []).map((r) => ({
+      id: r.id,
+      code: r.code,
+      prettyCode: r.code ? `${String(r.code).slice(0, 3)}-${String(r.code).slice(3)}` : null,
+      nickname: r.nickname || null,
+      createdAt: Number(r.created_at),
+      lastSeenAt: r.last_seen_at ? Number(r.last_seen_at) : null,
+      sessionsCount: Number(r.sessions_count || 0),
+      paidCount: Number(r.paid_count || 0),
+      gmvCent: Number(r.gmv_cent || 0),
+      gmvYuan: (Number(r.gmv_cent || 0) / 100).toFixed(2),
     })),
   });
 }

@@ -70,13 +70,14 @@
 
   async function loadDashboard() {
     showDashboard();
-    let stats, orders, sessions, finance;
+    let stats, orders, sessions, finance, users;
     try {
-      [stats, orders, sessions, finance] = await Promise.all([
+      [stats, orders, sessions, finance, users] = await Promise.all([
         window.BossAPI.admin.stats(),
         window.BossAPI.admin.orders(50),
         window.BossAPI.admin.sessions(50),
         window.BossAPI.admin.finance.summary(),
+        window.BossAPI.admin.users(100),
       ]);
     } catch (err) {
       if (err.status === 401) {
@@ -93,8 +94,16 @@
     renderTrend(stats.trend || []);
     renderTypes(stats.typeDistribution || []);
     renderShares(stats.sharesByPlatform || []);
+    renderUsers(users.users || []);
     renderOrders(orders.orders || []);
     renderSessions(sessions.sessions || []);
+  }
+
+  async function refreshUsers(q) {
+    try {
+      const r = await window.BossAPI.admin.users(100, q || "");
+      renderUsers(r.users || []);
+    } catch (err) { console.warn("refreshUsers failed:", err); }
   }
 
   function fmtYuan(n) {
@@ -203,14 +212,18 @@
   }
 
   function renderKpi(k, mode) {
-    el("k-started").textContent = k.started.toLocaleString();
-    el("k-completed").textContent = k.completed.toLocaleString();
-    el("k-paid").textContent = k.paid.toLocaleString();
+    el("k-started").textContent = (k.started || 0).toLocaleString();
+    el("k-completed").textContent = (k.completed || 0).toLocaleString();
+    el("k-paid").textContent = (k.paid || 0).toLocaleString();
     el("k-gmv").textContent = `¥${k.gmvYuan}`;
     el("k-started-24h").textContent = `+${k.started24h} (24h)`;
     el("k-completed-24h").textContent = `+${k.completed24h} (24h)`;
     el("k-paid-24h").textContent = `+${k.paid24h} (24h)`;
     el("k-shares").textContent = `shares: ${k.sharesTotal}`;
+    if (el("k-users")) {
+      el("k-users").textContent = (k.usersTotal || 0).toLocaleString();
+      el("k-users-24h").textContent = `+${k.users24h || 0} (24h) / +${k.users7d || 0} (7d)`;
+    }
     el("mode-badge").textContent = `mode: ${mode || "mock"}`;
   }
 
@@ -361,6 +374,13 @@
     });
   }
 
+  function prettyAcct(code) {
+    if (!code) return `<span class="muted">匿名旧</span>`;
+    const s = String(code);
+    const p = s.length === 6 ? `${s.slice(0, 3)}-${s.slice(3)}` : s;
+    return `<code class="acct-code">${p}</code>`;
+  }
+
   function renderOrders(rows) {
     const body = el("orders-tbody");
     body.innerHTML = "";
@@ -368,6 +388,7 @@
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${fmtTime(o.createdAt)}</td>
+        <td>${prettyAcct(o.userCode)}</td>
         <td><code>${short(o.id, 10)}</code></td>
         <td><code>${short(o.sid, 10)}</code></td>
         <td>${o.provider}</td>
@@ -377,7 +398,7 @@
       body.appendChild(tr);
     });
     if (!rows.length) {
-      body.innerHTML = `<tr><td colspan="6" class="muted">（暂无订单）</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="muted">（暂无订单）</td></tr>`;
     }
   }
 
@@ -388,6 +409,7 @@
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${fmtTime(s.createdAt)}</td>
+        <td>${prettyAcct(s.userCode)}</td>
         <td><code>${short(s.sid, 10)}</code></td>
         <td>${s.mainType || "—"}</td>
         <td>${s.subType || "—"}</td>
@@ -397,7 +419,29 @@
       body.appendChild(tr);
     });
     if (!rows.length) {
-      body.innerHTML = `<tr><td colspan="6" class="muted">（暂无 session）</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="muted">（暂无 session）</td></tr>`;
+    }
+  }
+
+  function renderUsers(rows) {
+    const body = el("users-tbody");
+    if (!body) return;
+    body.innerHTML = "";
+    rows.forEach((u) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${prettyAcct(u.code)}</td>
+        <td>${u.nickname ? escapeHtml(u.nickname) : "<span class=\"muted\">—</span>"}</td>
+        <td>${fmtTime(u.createdAt)}</td>
+        <td>${u.lastSeenAt ? fmtTime(u.lastSeenAt) : "<span class=\"muted\">—</span>"}</td>
+        <td class="num">${u.sessionsCount}</td>
+        <td class="num">${u.paidCount}</td>
+        <td class="num">¥${u.gmvYuan}</td>
+      `;
+      body.appendChild(tr);
+    });
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="7" class="muted">（尚无账号）</td></tr>`;
     }
   }
 
@@ -412,6 +456,17 @@
     });
     el("logout").addEventListener("click", doLogout);
     wireFinanceForm();
+
+    /* 用户搜索：输入停顿 250ms 后触发，空查询 = 展示全部 */
+    const search = el("users-search");
+    if (search) {
+      let timer = null;
+      search.addEventListener("input", () => {
+        clearTimeout(timer);
+        const q = search.value.trim();
+        timer = setTimeout(() => refreshUsers(q), 250);
+      });
+    }
   }
 
   boot();

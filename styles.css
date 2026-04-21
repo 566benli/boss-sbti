@@ -954,3 +954,256 @@ h2 {
   padding: 0 0.3rem;
   line-height: 1;
 }
+
+/* ========== 账户系统：login.html + 主菜单 + 账号气泡 ========== */
+.login-card {
+  text-align: center;
+}
+.login-title {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+.login-intro {
+  margin: 0 0 1.2rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.login-cta {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.login-existing {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  background: rgba(255, 255, 255, 0.015);
+}
+.login-existing > summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  color: var(--text);
+}
+.login-existing > summary::marker,
+.login-existing > summary::-webkit-details-marker {
+  display: none;
+}
+.login-existing[open] > summary {
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 0.3rem;
+}
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.login-label {
+  font-weight: 600;
+}
+.login-form input {
+  padding: 0.7rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0f1218;
+  color: var(--text);
+  font-size: 1rem;
+}
+.login-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.login-submit {
+  width: 100%;
+  margin-top: 0.4rem;
+}
+.login-error {
+  margin: 0.8rem 0 0;
+  color: #f38b8b;
+  background: rgba(200, 76, 76, 0.1);
+  border: 1px solid rgba(200, 76, 76, 0.35);
+  padding: 0.55rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.acct-dialog {
+  width: min(420px, calc(100% - 2rem));
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem 1.25rem 1.35rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.acct-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+.acct-dialog h3 {
+  margin: 0 0 0.8rem;
+  text-align: center;
+  font-size: 1.15rem;
+}
+.acct-code-show {
+  margin: 0.4rem 0 0.9rem;
+  font-family: "Segoe UI Black", "Courier New", monospace;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-align: center;
+  color: var(--accent);
+  background: rgba(245, 177, 74, 0.08);
+  border: 1px dashed rgba(245, 177, 74, 0.4);
+  border-radius: 10px;
+  padding: 0.8rem 0.4rem;
+}
+
+/* 主菜单：账号头 + 历史报告 */
+.menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.menu-acct {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.menu-acct-code {
+  font-family: "Segoe UI Black", "Courier New", monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.menu-acct-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.menu-logout {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.menu-logout:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.history-section {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.history-section h3 {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+}
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.history-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.history-item-code {
+  font-weight: 700;
+  color: var(--accent);
+}
+.history-item-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.history-item-cta {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #1a1208;
+  text-decoration: none;
+  font-weight: 700;
+}
+.history-item-cta:hover {
+  background: #f0a030;
+}
+.history-empty {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 0.8rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+@media (max-width: 480px) {
+  .menu-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .menu-logout {
+    align-self: flex-end;
+  }
+  .history-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .history-item-cta {
+    text-align: center;
+  }
+}

@@ -92,13 +92,14 @@ function notifyUrl(env) {
   return `${base}/api/pay/webhook/payjs`;
 }
 
-function callbackUrl(env, sid) {
+function callbackUrl(env, sid, rtToken) {
   const origin = frontendOrigin(env).replace(/\/+$/, "");
-  return `${origin}/report.html?sid=${encodeURIComponent(sid)}&from=payjs`;
+  const base = `${origin}/report.html?sid=${encodeURIComponent(sid)}&from=payjs`;
+  return rtToken ? `${base}&rt=${encodeURIComponent(rtToken)}` : base;
 }
 
 /** 构造收银台跳转 URL（不走 server→PayJS 请求，直接让浏览器跳） */
-export function buildCashierUrl({ env, orderId, amountCent, sid }) {
+export function buildCashierUrl({ env, orderId, amountCent, sid, rtToken }) {
   const mchid = env_required(env, "PAYJS_MCHID");
   const key = env_required(env, "PAYJS_KEY");
 
@@ -109,7 +110,7 @@ export function buildCashierUrl({ env, orderId, amountCent, sid }) {
     body: trimBody("老板SBTI·完整报告解锁"),
     attach: sid,
     notify_url: notifyUrl(env),
-    callback_url: callbackUrl(env, sid),
+    callback_url: callbackUrl(env, sid, rtToken),
   };
   params.sign = signPayjs(params, key);
 
@@ -159,10 +160,10 @@ export const payjs = {
 
   /** 默认用 cashier 模式：一条 URL 搞定 PC 扫码 / H5 微信 / H5 支付宝。
    *  若商户开了 Native 或前端想要自绘 QR，可以把 `PAYJS_PREFER=native` 切一下。 */
-  async createOrder({ env, orderId, amountCent, sid }) {
+  async createOrder({ env, orderId, amountCent, sid, rtToken }) {
     const prefer = String(env.PAYJS_PREFER || "cashier").toLowerCase();
 
-    const payUrl = buildCashierUrl({ env, orderId, amountCent, sid });
+    const payUrl = buildCashierUrl({ env, orderId, amountCent, sid, rtToken });
     let qrUrl = null;
     let providerOrderId = null;
 

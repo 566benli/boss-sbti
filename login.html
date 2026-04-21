@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>登录 · 老板 SBTI</title>
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="bosssbti-api" content="https://api.bosssbti.com" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>老板SBTI测试</h1>
+    </header>
+
+    <main>
+      <section class="card login-card" id="login-card">
+        <h2 class="login-title">开始你的鉴定之旅</h2>
+        <p class="muted login-intro">
+          每个人都有一个专属账号，测试记录 / 已解锁报告都挂在上面 · 下次想看旧报告，用同一个账号码登录即可。
+        </p>
+
+        <button type="button" id="btn-create" class="primary login-cta">
+          立即新建账号开始鉴定
+        </button>
+
+        <div class="login-divider"><span>或</span></div>
+
+        <details class="login-existing">
+          <summary>我已经有账号码了</summary>
+          <form id="form-login" class="login-form" autocomplete="off">
+            <label>
+              <span class="login-label">账号码</span>
+              <input
+                type="text"
+                id="input-code"
+                placeholder="如 ABC-123 或 ABC123"
+                maxlength="10"
+                inputmode="text"
+                autocapitalize="characters"
+                required
+              />
+            </label>
+            <label>
+              <span class="login-label">PIN（可选，若之前设置过）</span>
+              <input
+                type="password"
+                id="input-pin"
+                placeholder="4-6 位数字，未设置可留空"
+                maxlength="6"
+                inputmode="numeric"
+              />
+            </label>
+            <button type="submit" class="secondary login-submit">登录账号</button>
+          </form>
+        </details>
+
+        <p class="login-error" id="login-error" hidden></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>内容来源：《老板SBTI图鉴》设计稿与图鉴条目。</small>
+    </footer>
+
+    <dialog id="acct-code-dialog" class="acct-dialog">
+      <h3>已为你生成专属账号码</h3>
+      <p class="acct-code-show" id="acct-code-show">ABC-123</p>
+      <p class="muted">请截图保存 · 下次换设备 / 换浏览器想看历史报告就靠它登录。</p>
+      <button type="button" class="primary" id="btn-dialog-go">已保存，开始鉴定 →</button>
+    </dialog>
+
+    <script src="api.js"></script>
+    <script>
+      (function () {
+        const el = (id) => document.getElementById(id);
+        const errBox = el("login-error");
+        const codeDialog = el("acct-code-dialog");
+        const codeShow = el("acct-code-show");
+
+        function showError(msg) {
+          errBox.textContent = msg;
+          errBox.hidden = false;
+        }
+        function clearError() {
+          errBox.textContent = "";
+          errBox.hidden = true;
+        }
+
+        function goHome() {
+          location.href = "/";
+        }
+
+        /* 已登录直接跳主菜单 */
+        window.BossAPI.account.me().then(() => {
+          goHome();
+        }).catch(() => { /* 未登录，展示 login 页 */ });
+
+        el("btn-create").addEventListener("click", async (e) => {
+          clearError();
+          const btn = e.currentTarget;
+          btn.disabled = true;
+          const original = btn.textContent;
+          btn.textContent = "正在创建…";
+          try {
+            const r = await window.BossAPI.account.create({});
+            const pretty = (r.user && r.user.prettyCode) || (r.user && r.user.code) || "";
+            codeShow.textContent = pretty;
+            if (typeof codeDialog.showModal === "function") {
+              codeDialog.showModal();
+            } else {
+              alert(`你的账号码：${pretty}\n请截图保存，下次可用它登录。`);
+              goHome();
+            }
+          } catch (err) {
+            showError(err.message || "创建失败，请重试");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = original;
+          }
+        });
+
+        el("btn-dialog-go").addEventListener("click", () => {
+          codeDialog.close();
+          goHome();
+        });
+
+        el("form-login").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          clearError();
+          const code = el("input-code").value.trim();
+          const pin = el("input-pin").value.trim();
+          if (!code) { showError("请填写账号码"); return; }
+          try {
+            await window.BossAPI.account.login({ code, pin: pin || undefined });
+            goHome();
+          } catch (err) {
+            if (err.code === "PIN_REQUIRED") showError("该账号设置了 PIN，请填写 PIN 后重试");
+            else if (err.code === "BAD_PIN") showError("PIN 不正确");
+            else if (err.code === "NO_SUCH_ACCOUNT") showError("账号码不存在，请核对");
+            else if (err.code === "BAD_CODE") showError("账号码格式不正确，应为 6 位字母或数字");
+            else showError(err.message || "登录失败");
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

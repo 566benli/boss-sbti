@@ -70,9 +70,10 @@ function notifyUrl(env) {
   return `${base}/api/pay/webhook/xunhupay`;
 }
 
-function returnUrl(env, sid) {
+function returnUrl(env, sid, rtToken) {
   const origin = frontendOrigin(env).replace(/\/+$/, "");
-  return `${origin}/report.html?sid=${encodeURIComponent(sid)}&from=xunhupay`;
+  const base = `${origin}/report.html?sid=${encodeURIComponent(sid)}&from=xunhupay`;
+  return rtToken ? `${base}&rt=${encodeURIComponent(rtToken)}` : base;
 }
 
 function shortOrderNo(orderId) {
@@ -99,7 +100,7 @@ export const xunhupay = {
   id: "xunhupay",
 
   /** 调用虎皮椒下单接口，返回支付跳转 URL + 二维码图片 URL。 */
-  async createOrder({ env, orderId, amountCent, sid, channel, isMobile }) {
+  async createOrder({ env, orderId, amountCent, sid, channel, isMobile, rtToken }) {
     const appid = env_required(env, "XUNHUPAY_APPID");
     const appsecret = env_required(env, "XUNHUPAY_APPSECRET");
     const plugins = normalizeChannel(channel);
@@ -112,7 +113,7 @@ export const xunhupay = {
       title: "老板SBTI·完整报告解锁",
       time: String(Math.floor(Date.now() / 1000)),
       notify_url: notifyUrl(env),
-      return_url: returnUrl(env, sid),
+      return_url: returnUrl(env, sid, rtToken),
       nonce_str: nonceStr(),
       plugins, // "wechat" | "alipay"
       attach: sid,

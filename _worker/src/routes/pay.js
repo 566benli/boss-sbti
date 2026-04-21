@@ -1,5 +1,6 @@
 import { json, ok, error, text, uuid, nowMs, readJsonSafe } from "../lib/util.js";
 import { getProvider, mock, payjs, xunhupay } from "../lib/providers/index.js";
+import { requireAccount, signResumeToken } from "./account.js";
 
 /** 解析请求头里的粗略移动端标识。 */
 function requestIsMobile(request) {
@@ -14,10 +15,16 @@ export async function createPayment(request, env) {
   const sid = body.sid;
   const channel = body.channel; // 虎皮椒强制指定渠道；payjs/mock 会忽略此字段
 
+  const me = await requireAccount(request, env);
+  if (!me) return error(401, "UNAUTH", "请先登录账号");
+
   const row = await env.DB.prepare(
-    `SELECT id, paid, completed_at FROM sessions WHERE id = ?`,
+    `SELECT id, user_id, paid, completed_at FROM sessions WHERE id = ?`,
   ).bind(sid).first();
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  if (row.user_id && row.user_id !== me.id) {
+    return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
+  }
   if (!row.completed_at) return error(409, "NOT_COMPLETED", "finish the quiz first");
   if (row.paid) return ok({ alreadyPaid: true, sid });
 
@@ -26,9 +33,13 @@ export async function createPayment(request, env) {
   const provider = getProvider(env);
 
   await env.DB.prepare(
-    `INSERT INTO orders (id, session_id, provider, amount_cent, status, created_at)
-     VALUES (?, ?, ?, ?, 'pending', ?)`,
-  ).bind(orderId, sid, provider.id, amount, nowMs()).run();
+    `INSERT INTO orders (id, session_id, provider, amount_cent, status, created_at, user_id)
+     VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
+  ).bind(orderId, sid, provider.id, amount, nowMs(), me.id).run();
+
+  /* 微信内置浏览器付完款回跳 report.html 时可能丢 cookie，
+   * 所以把一次性 resume token 放进 return_url，前端到 report.html 后换回 cookie。*/
+  const rtToken = await signResumeToken(me, sid, env);
 
   let pay;
   try {
@@ -39,6 +50,7 @@ export async function createPayment(request, env) {
       sid,
       channel,
       isMobile: requestIsMobile(request),
+      rtToken,
     });
   } catch (err) {
     console.error("createOrder failed:", err && err.stack || err);
@@ -86,9 +98,17 @@ export async function payStatus(request, env) {
   const orderId = url.searchParams.get("orderId");
   if (!orderId) return error(400, "BAD_REQUEST", "missing orderId");
   const row = await env.DB.prepare(
-    `SELECT status, session_id, amount_cent, paid_at FROM orders WHERE id = ?`,
+    `SELECT status, session_id, amount_cent, paid_at, user_id FROM orders WHERE id = ?`,
   ).bind(orderId).first();
   if (!row) return error(404, "NOT_FOUND", "order not found");
+
+  if (row.user_id) {
+    const me = await requireAccount(request, env);
+    if (!me || me.id !== row.user_id) {
+      return error(403, "FORBIDDEN", "该订单不属于当前账号");
+    }
+  }
+
   return ok({
     orderId,
     status: row.status,

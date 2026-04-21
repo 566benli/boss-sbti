@@ -151,6 +151,11 @@
 
         <div class="kpi-grid">
           <div class="kpi-card">
+            <div class="kpi-label">USERS</div>
+            <div class="kpi-value" id="k-users">–</div>
+            <div class="kpi-delta" id="k-users-24h"></div>
+          </div>
+          <div class="kpi-card">
             <div class="kpi-label">TESTS STARTED</div>
             <div class="kpi-value" id="k-started">–</div>
             <div class="kpi-delta" id="k-started-24h"></div>
@@ -209,12 +214,42 @@
         </section>
 
         <section class="term-card">
+          <div class="users-head">
+            <h3>// 用户（账号）</h3>
+            <input
+              id="users-search"
+              class="term-input users-search"
+              type="search"
+              placeholder="按账号码或昵称过滤（如 ABC 或 张三）"
+              autocomplete="off"
+            />
+          </div>
+          <div class="table-wrap">
+            <table class="term-table">
+              <thead>
+                <tr>
+                  <th>code</th>
+                  <th>nickname</th>
+                  <th>created</th>
+                  <th>last seen</th>
+                  <th class="num">tests</th>
+                  <th class="num">paid</th>
+                  <th class="num">GMV (¥)</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="term-card">
           <h3>// 最近订单</h3>
           <div class="table-wrap">
             <table class="term-table">
               <thead>
                 <tr>
                   <th>time</th>
+                  <th>acct</th>
                   <th>order</th>
                   <th>sid</th>
                   <th>provider</th>
@@ -234,6 +269,7 @@
               <thead>
                 <tr>
                   <th>created</th>
+                  <th>acct</th>
                   <th>sid</th>
                   <th>main</th>
                   <th>sub</th>

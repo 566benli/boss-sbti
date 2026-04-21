@@ -7,8 +7,12 @@ import { startSession, finishSession, reportPreview, reportFull } from "./routes
 import { createPayment, payStatus, mockWebhook, xunhupayWebhook, payjsWebhook } from "./routes/pay.js";
 import { shareClick } from "./routes/share.js";
 import {
+  accountCreate, accountLogin, accountLogout, accountMe,
+  accountUpdate, accountResume,
+} from "./routes/account.js";
+import {
   adminLogin, adminLogout, adminMe,
-  adminStats, adminOrders, adminSessions,
+  adminStats, adminOrders, adminSessions, adminUsers,
 } from "./routes/admin.js";
 import { financeSummary, financeWithdraw, financeWithdrawDelete } from "./routes/finance.js";
 
@@ -41,12 +45,20 @@ async function route(request, env, ctx) {
 
   if (m === "POST" && p === "/api/share/click") return shareClick(request, env);
 
+  if (m === "POST" && p === "/api/account/create") return accountCreate(request, env);
+  if (m === "POST" && p === "/api/account/login") return accountLogin(request, env);
+  if (m === "POST" && p === "/api/account/logout") return accountLogout(request, env);
+  if (m === "GET"  && p === "/api/account/me") return accountMe(request, env);
+  if (m === "POST" && p === "/api/account/update") return accountUpdate(request, env);
+  if (m === "POST" && p === "/api/account/resume") return accountResume(request, env);
+
   if (m === "POST" && p === "/api/admin/login") return adminLogin(request, env);
   if (m === "POST" && p === "/api/admin/logout") return adminLogout(request, env);
   if (m === "GET" && p === "/api/admin/me") return adminMe(request, env);
   if (m === "GET" && p === "/api/admin/stats") return adminStats(request, env);
   if (m === "GET" && p === "/api/admin/orders") return adminOrders(request, env);
   if (m === "GET" && p === "/api/admin/sessions") return adminSessions(request, env);
+  if (m === "GET" && p === "/api/admin/users") return adminUsers(request, env);
   if (m === "GET" && p === "/api/admin/finance/summary") return financeSummary(request, env);
   if (m === "POST" && p === "/api/admin/finance/withdraw") return financeWithdraw(request, env);
   if (m === "DELETE" && p === "/api/admin/finance/withdraw") return financeWithdrawDelete(request, env);
