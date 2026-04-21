@@ -2,6 +2,7 @@ name = "boss-sbti-api"
 main = "src/index.js"
 compatibility_date = "2024-10-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 # 路由绑定：接到 api.bosssbti.com 的所有路径
 # 部署时需要在 Cloudflare 控制台为 bosssbti.com zone 添加 CNAME：
@@ -11,18 +12,15 @@ compatibility_flags = ["nodejs_compat"]
 pattern = "api.bosssbti.com/*"
 zone_name = "bosssbti.com"
 
-# 开发时可用的 preview URL：
-workers_dev = true
-
 [[d1_databases]]
 binding = "DB"
 database_name = "boss-sbti"
-database_id = "REPLACE_WITH_REAL_D1_ID_AFTER_CREATE"
+database_id = "b14c07b0-a123-4da2-b6de-f173d0e780fd"
 migrations_dir = "migrations"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_REAL_KV_ID_AFTER_CREATE"
+id = "5ac83e34fa2847c18b1c50ca7127233c"
 
 # vars（非敏感）
 [vars]
