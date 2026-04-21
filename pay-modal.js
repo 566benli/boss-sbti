@@ -208,22 +208,31 @@
     renderOrderPane(slot, order, { onPaid: opts.onPaid });
     if (!state.pollingStarted) { state.pollingStarted = true; pollForPaid(state, opts, sid); }
 
-    // 如果是虎皮椒，再露出一个"切支付宝"按钮（默认已给了微信单）
+    // 虎皮椒：按后端 availableChannels 渲染按钮；只有一个渠道时不显示按钮行。
     if (String(order.provider).toLowerCase() === "xunhupay") {
-      const mkBtn = (label, channel, initial) => {
-        const b = el("button", {
-          class: "pay-channel-btn" + (initial ? " pay-channel-btn-active" : ""),
-        }, label);
-        b.addEventListener("click", async () => {
-          [...channelRow.querySelectorAll(".pay-channel-btn")]
-            .forEach((x) => x.classList.remove("pay-channel-btn-active"));
-          b.classList.add("pay-channel-btn-active");
-          await createAndRender({ sid, channel, slot, statusLine, box, opts, state });
-        });
-        return b;
-      };
-      channelRow.appendChild(mkBtn("🟢 微信支付", "wechat", order.channel !== "alipay"));
-      channelRow.appendChild(mkBtn("🔵 支付宝支付", "alipay", order.channel === "alipay"));
+      const avail = Array.isArray(order.availableChannels) && order.availableChannels.length
+        ? order.availableChannels
+        : ["wechat"];
+      if (avail.length >= 2) {
+        const mkBtn = (label, channel, initial) => {
+          const b = el("button", {
+            class: "pay-channel-btn" + (initial ? " pay-channel-btn-active" : ""),
+          }, label);
+          b.addEventListener("click", async () => {
+            [...channelRow.querySelectorAll(".pay-channel-btn")]
+              .forEach((x) => x.classList.remove("pay-channel-btn-active"));
+            b.classList.add("pay-channel-btn-active");
+            await createAndRender({ sid, channel, slot, statusLine, box, opts, state });
+          });
+          return b;
+        };
+        if (avail.includes("wechat")) {
+          channelRow.appendChild(mkBtn("🟢 微信支付", "wechat", order.channel !== "alipay"));
+        }
+        if (avail.includes("alipay")) {
+          channelRow.appendChild(mkBtn("🔵 支付宝支付", "alipay", order.channel === "alipay"));
+        }
+      }
     }
   }
 

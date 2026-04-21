@@ -23,9 +23,11 @@ id = "5ac83e34fa2847c18b1c50ca7127233c"
 
 # vars（非敏感）
 [vars]
-PAYMENT_MODE = "mock"
+PAYMENT_MODE = "xunhupay"
 ALLOWED_ORIGINS = "https://bosssbti.com,https://www.bosssbti.com,https://566benli.github.io"
 PRICE_CENT = "99"
+# 前端应该显示的支付渠道按钮。申请支付宝渠道通过后改为 "wechat,alipay"。
+XUNHUPAY_CHANNELS = "wechat"
 
 # 敏感密钥通过 `wrangler secret put` 设置：
 #   ADMIN_PASSWORD          —— 管理员登录密码

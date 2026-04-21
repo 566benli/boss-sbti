@@ -57,6 +57,15 @@ export async function createPayment(request, env) {
   if (provider.id === "mock") {
     demoSign = await mock.demoSign(orderId, env);
   }
+
+  // 虎皮椒：前端要根据 availableChannels 渲染按钮。默认仅 wechat；
+  // 申请到支付宝渠道后运维改 XUNHUPAY_CHANNELS env 即可放开。
+  let availableChannels = null;
+  if (provider.id === "xunhupay") {
+    const raw = String(env.XUNHUPAY_CHANNELS || "wechat").toLowerCase();
+    availableChannels = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+
   return ok({
     orderId,
     amountCent: amount,
@@ -65,6 +74,7 @@ export async function createPayment(request, env) {
     qrUrl: pay.qrUrl,
     provider: provider.id,
     channel: pay.channel || null,
+    availableChannels,
     demo: !!pay.demo,
     demoSign,
   });
