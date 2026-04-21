@@ -2,15 +2,14 @@ name = "boss-sbti-api"
 main = "src/index.js"
 compatibility_date = "2024-10-01"
 compatibility_flags = ["nodejs_compat"]
-workers_dev = true
+workers_dev = false
 
-# 路由绑定：接到 api.bosssbti.com 的所有路径
-# 部署时需要在 Cloudflare 控制台为 bosssbti.com zone 添加 CNAME：
-# api  ->  boss-sbti-api.<你的worker子域>.workers.dev （Proxied 橙云）
-# 或直接用 [[routes]] 由 Workers 接管：
+# 把 api.bosssbti.com 做成 Workers Custom Domain：
+# wrangler deploy 时会自动在 Cloudflare 上建好 DNS 记录、签 TLS 证书、并把流量路由到本 Worker。
+# 不需要再手动加 CNAME。
 [[routes]]
-pattern = "api.bosssbti.com/*"
-zone_name = "bosssbti.com"
+pattern = "api.bosssbti.com"
+custom_domain = true
 
 [[d1_databases]]
 binding = "DB"
