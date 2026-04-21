@@ -1,5 +1,5 @@
-/* 文案摘自《老板SBTI图鉴 new.docx》图鉴部分 + 《老板SBTI测评小问卷_新版答题逻辑与结果.docx》;
- * 新版结果池共 28 种人格; 已删除旧稿残留的 NULL / CLOWN / GHOST / TOXIC。
+/* 文案摘自《老板SBTI图鉴》最新版 + 《老板SBTI测评小问卷_新版答题逻辑与结果》；
+ * 新版结果池共 28 种人格；已删除旧稿残留的 NULL / CLOWN / GHOST / TOXIC 以及 FAKE（更名为 BUSY）。
  */
 window.BOSS_TYPES = {
   SUCKER: {
@@ -22,7 +22,7 @@ window.BOSS_TYPES = {
   },
   PUAer: {
     code: "PUA-er",
-    name: "一张嘴能把驴骗去拉磨的洗脑仙人",
+    name: "一张嘴能把驴骗成阿胶的洗脑仙人",
     desc: "他不一定会提升你的能力，但一定会降低你的自尊。他擅长把压榨包装成培养，把羞辱包装成鞭策。",
     behavior: "长期精神打压，让你怀疑自己不配休息、不配涨薪、不配做人。",
     horror: "★★★★★",
@@ -31,7 +31,7 @@ window.BOSS_TYPES = {
   },
   CAKE: {
     code: "CAKE",
-    name: "五星级米其林职场意大利千层饼主厨",
+    name: "意大利千层饼主厨",
     desc: "未来讲得很香，现实饿得发慌。他的饼又大又圆，就是不能吃。",
     behavior: "用愿景代替工资，用梦想抵扣奖金。",
     horror: "★★★★☆",
@@ -67,7 +67,7 @@ window.BOSS_TYPES = {
   },
   THIEF: {
     code: "THIEF",
-    name: "你做饭端锅TA悠闲上桌的职场小偷",
+    name: "你做饭端锅TA悠闲上桌的职场偷子",
     desc: "你熬夜做方案，他白天拿去领奖。你负责燃烧，他负责发光。",
     behavior: "成果全归他，问题全归你。",
     horror: "★★★★★",
@@ -85,11 +85,11 @@ window.BOSS_TYPES = {
   },
   CULT: {
     code: "CULT",
-    name: "开朝圣大会拿企业文化做法的邪教教主",
+    name: "拿企业文化做法的邪教教主",
     desc: "他不是在管理公司，他是在创办宗教。公司文化像教义，老板讲话像神谕，员工离职像叛教。",
     behavior: "要求绝对忠诚，把质疑当异端。",
     horror: "★★★★★",
-    keywordDanger: "要把公司当成你的家。",
+    keywordDanger: "要把公司当家。",
     image: "assets/bosses/CULT.jpg",
   },
   CCTV: {
@@ -156,7 +156,7 @@ window.BOSS_TYPES = {
   },
   MOON: {
     code: "MOON",
-    name: "打印机都缺纸还天天想上市敲钟的白日梦想家",
+    name: "屎上雕花的白日梦想家",
     desc: "目标永远脱离现实。预算三块五，目标冲火星；团队三个人，计划统治行业。",
     behavior: "定不可能完成的 KPI，然后说你缺乏想象力。",
     horror: "★★★★☆",
@@ -165,21 +165,21 @@ window.BOSS_TYPES = {
   },
   FOG: {
     code: "FOG",
-    name: "成天打哑谜疑似已升天来给你托梦的高考出题人",
+    name: "成天打哑谜疑似已升天来给你托梦的出题人",
     desc: "他说需求像算命，给反馈像打哑谜。你问具体哪里不好，他说「感觉不对」。",
     behavior: "需求模糊、反复改稿、永远没有明确标准。",
     horror: "★★★★☆",
     keywordDanger: "你自己看这对吗？",
     image: "assets/bosses/FOG.jpg",
   },
-  FAKE: {
-    code: "FAKE",
+  BUSY: {
+    code: "BUSY",
     name: "随地大小忙不吃饭不拉屎的「国家领导人」",
     desc: "日程很满，产出为零；会议很多，结论没有。发消息永远不回，一问永远在忙。",
     behavior: "天天开会、天天转发、天天「同步一下」。",
     horror: "★★★☆☆",
     keywordDanger: "我很忙。",
-    image: "assets/bosses/FAKE.jpg",
+    image: "assets/bosses/BUSY.jpg",
   },
   ROACH: {
     code: "ROACH",
@@ -192,7 +192,7 @@ window.BOSS_TYPES = {
   },
   MONK: {
     code: "MONK",
-    name: "没苦硬要你吃的苦派禅师",
+    name: "血液里流淌着冰美式的苦派禅师",
     desc: "自己不加钱，只劝你修行。没苦硬吃，吃得苦中苦，老板买路虎。",
     behavior: "鼓吹吃苦、牺牲、忍耐，把贫穷包装成美德。",
     horror: "★★★★☆",
@@ -201,7 +201,7 @@ window.BOSS_TYPES = {
   },
   SHEET: {
     code: "SHEET",
-    name: "新建 Excel 走天下的表格奴隶主",
+    name: "疑似母语为 Excel 的表格奴隶主",
     desc: "在他眼里，世界不是由原子组成的，是由 Excel 单元格组成的。任何问题最后都会变成「你先做个表」。",
     behavior: "表格套表格，汇总套汇总，统计套统计。",
     horror: "★★★☆☆",
@@ -210,7 +210,7 @@ window.BOSS_TYPES = {
   },
   RING: {
     code: "RING",
-    name: "电话微信钉钉三界连环追杀案夺命屠夫",
+    name: "电话微信钉钉飞书连环追杀案夺命屠夫",
     desc: "电话、微信、钉钉、邮件，多平台立体轰炸。你不是员工，你是他的人肉通知接收器。",
     behavior: "要求 10 分钟内回复，超过 11 分钟就开始追魂。",
     horror: "★★★★★",
@@ -219,7 +219,7 @@ window.BOSS_TYPES = {
   },
   LEAVE: {
     code: "LEAVE",
-    name: "一请假就审查族谱怕你越狱的典狱长",
+    name: "一请假就审你三代怕你越狱的典狱长",
     desc: "在他眼里，员工没有生病、家事、急事，只有「不够敬业」。你不是人，你是全年无休的办公耗材。",
     behavior: "请一天假，审你三代；请半天假，怀疑你跑路。哪怕你发烧到 39 度，他也会问：「那你能不能线上看一下？」",
     horror: "★★★★★",

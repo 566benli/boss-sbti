@@ -175,7 +175,7 @@ function resolveMainType(dim, scores) {
     E: ['SUCKER','OTOT','CAKE','SAINT','MONK','MOON'],
     C: ['CCTV','RING','LEAVE','KING','CULT','SHEET'],
     T: ['PUAer','AUV','MASK','BOOM','DADDY'],
-    W: ['TRASH','BRICK','FOG','FAKE','ROACH','TEDX','THIEF'],
+    W: ['TRASH','BRICK','FOG','BUSY','ROACH','TEDX','THIEF'],
     GOOD: ['GOLD','COVER','NURSE'],
   };
   const GOOD = new Set(POOL_EXTRACT.GOOD);
