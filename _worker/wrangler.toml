@@ -33,15 +33,19 @@ PRICE_CENT = "99"
 #   IP_HASH_SALT            —— 每日 IP 哈希盐
 #   MOCK_WEBHOOK_SECRET     —— Phase 1 demo 付费按钮签名
 #
-# Phase 2（PayJS）新增：
-#   PAYJS_MCHID             —— PayJS 商户号（payjs.cn 后台）
-#   PAYJS_KEY               —— PayJS 通信密钥（payjs.cn 后台）
-# 可选环境变量（非敏感，可写在 [vars] 或 secret 里都行）：
+# Phase 2 选项 A：虎皮椒 xunhupay（推荐，零开户费 + 直接支持支付宝）
+#   XUNHUPAY_APPID          —— 虎皮椒 APP ID（xunhupay.com 后台"我的支付渠道"）
+#   XUNHUPAY_APPSECRET      —— 虎皮椒 APPSECRET
+#   XUNHUPAY_NOTIFY_URL     —— 可选，覆盖 notify 域名（默认 https://api.bosssbti.com）
+#
+# Phase 2 选项 B：PayJS payjs.cn（合规度更高，但一次性 300 元开户费）
+#   PAYJS_MCHID             —— 商户号
+#   PAYJS_KEY               —— 通信密钥
 #   PAYJS_PREFER            —— "cashier"（默认）/ "native"
-#   PAYJS_NOTIFY_URL        —— 覆盖 notify 域名，默认 https://api.bosssbti.com
+#   PAYJS_NOTIFY_URL        —— 可选覆盖 notify 域名
 #
 # 切真实支付时：
-#   1) wrangler secret put PAYJS_MCHID
-#   2) wrangler secret put PAYJS_KEY
-#   3) 把上面 [vars] 里的 PAYMENT_MODE 改成 "payjs"
+#   1) wrangler secret put XUNHUPAY_APPID （或 PAYJS_MCHID）
+#   2) wrangler secret put XUNHUPAY_APPSECRET （或 PAYJS_KEY）
+#   3) 把上面 [vars] 里的 PAYMENT_MODE 改成 "xunhupay"（或 "payjs"）
 #   4) npx wrangler deploy

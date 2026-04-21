@@ -1,11 +1,18 @@
 import { json, ok, error, text, uuid, nowMs, readJsonSafe } from "../lib/util.js";
-import { getProvider, mock, payjs } from "../lib/providers/index.js";
+import { getProvider, mock, payjs, xunhupay } from "../lib/providers/index.js";
 
-/** POST /api/pay/create  { sid } */
+/** 解析请求头里的粗略移动端标识。 */
+function requestIsMobile(request) {
+  const ua = (request.headers.get("user-agent") || "").toLowerCase();
+  return /android|iphone|ipad|ipod|mobile|micromessenger|alipay/i.test(ua);
+}
+
+/** POST /api/pay/create  { sid, channel?: "wechat" | "alipay" } */
 export async function createPayment(request, env) {
   const body = await readJsonSafe(request);
   if (!body || !body.sid) return error(400, "BAD_REQUEST", "missing sid");
   const sid = body.sid;
+  const channel = body.channel; // 虎皮椒强制指定渠道；payjs/mock 会忽略此字段
 
   const row = await env.DB.prepare(
     `SELECT id, paid, completed_at FROM sessions WHERE id = ?`,
@@ -18,7 +25,6 @@ export async function createPayment(request, env) {
   const orderId = uuid();
   const provider = getProvider(env);
 
-  // 真实聚合支付需要的 provider_order_id 在下单后才知道，这里先用 null 占位。
   await env.DB.prepare(
     `INSERT INTO orders (id, session_id, provider, amount_cent, status, created_at)
      VALUES (?, ?, ?, ?, 'pending', ?)`,
@@ -26,13 +32,19 @@ export async function createPayment(request, env) {
 
   let pay;
   try {
-    pay = await provider.createOrder({ env, orderId, amountCent: amount, sid });
+    pay = await provider.createOrder({
+      env,
+      orderId,
+      amountCent: amount,
+      sid,
+      channel,
+      isMobile: requestIsMobile(request),
+    });
   } catch (err) {
     console.error("createOrder failed:", err && err.stack || err);
     return error(502, "PROVIDER_ERROR", String(err && err.message || err));
   }
 
-  // 如果 provider 返回了它自己的订单号（PayJS / 虎皮椒），写回方便对账。
   if (pay && pay.providerOrderId) {
     try {
       await env.DB.prepare(
@@ -52,6 +64,7 @@ export async function createPayment(request, env) {
     payUrl: pay.payUrl,
     qrUrl: pay.qrUrl,
     provider: provider.id,
+    channel: pay.channel || null,
     demo: !!pay.demo,
     demoSign,
   });
@@ -99,47 +112,26 @@ export async function mockWebhook(request, env) {
   return ok({ orderId, sid: row.session_id, paidAt });
 }
 
-/** POST /api/pay/webhook/payjs —— PayJS 异步通知。
- *  重要：成功必须返回纯文本 "success"（任何 JSON 都会让 PayJS 判失败并最多重试 5 次）。
- *  失败时返回任意非 "success" 文本，比如 "fail:<reason>"，PayJS 会按策略重试。 */
-export async function payjsWebhook(request, env) {
-  let result;
-  try {
-    result = await payjs.verifyWebhook(request, env);
-  } catch (err) {
-    console.error("payjs webhook verify threw:", err && err.stack || err);
-    return text(`fail:verify_error:${err && err.message || "unknown"}`, { status: 500 });
-  }
-
-  if (!result.ok) {
-    console.warn("payjs webhook rejected:", result.reason);
-    return text(`fail:${result.reason || "unknown"}`, { status: 400 });
-  }
-
+/** 复用的 webhook 落库流程。orderId 可能是 UUID 去横线的 32 位缩写，也可能是完整 UUID。 */
+async function finalizeRealPaymentWebhook({ env, result, logTag }) {
   const { orderId, paidAt, raw, totalFee, providerOrderId } = result;
 
-  // out_trade_no 我们在下单时做过 UUID 去横线截 32 位（见 providers/payjs.js::shortOrderNo）。
-  // 数据库里的 orders.id 是完整 UUID（含横线、36 字符）。这里用 REPLACE 匹配 shortened 形式。
   const row = await env.DB.prepare(
     `SELECT id, session_id, status, amount_cent FROM orders
      WHERE REPLACE(id, '-', '') = ? OR id = ? LIMIT 1`,
   ).bind(orderId, orderId).first();
 
   if (!row) {
-    console.warn("payjs webhook: order not found for out_trade_no", orderId);
+    console.warn(`${logTag}: order not found for`, orderId);
     return text("fail:order_not_found", { status: 404 });
   }
 
-  // 金额校验（单位：分），抵御回调参数篡改。
   if (totalFee && row.amount_cent && totalFee !== row.amount_cent) {
-    console.warn("payjs webhook amount mismatch", { orderId, totalFee, expect: row.amount_cent });
+    console.warn(`${logTag}: amount mismatch`, { orderId, totalFee, expect: row.amount_cent });
     return text("fail:amount_mismatch", { status: 400 });
   }
 
-  if (row.status === "paid") {
-    // 已经处理过，告诉 PayJS 停止重试。
-    return text("success");
-  }
+  if (row.status === "paid") return text("success");
 
   await env.DB.batch([
     env.DB.prepare(
@@ -153,7 +145,32 @@ export async function payjsWebhook(request, env) {
   return text("success");
 }
 
-/** POST /api/pay/webhook/xunhupay —— 保留占位，暂未启用 */
+/** POST /api/pay/webhook/payjs */
+export async function payjsWebhook(request, env) {
+  let result;
+  try { result = await payjs.verifyWebhook(request, env); }
+  catch (err) {
+    console.error("payjs webhook verify threw:", err && err.stack || err);
+    return text(`fail:verify_error:${err && err.message || "unknown"}`, { status: 500 });
+  }
+  if (!result.ok) {
+    console.warn("payjs webhook rejected:", result.reason);
+    return text(`fail:${result.reason || "unknown"}`, { status: 400 });
+  }
+  return finalizeRealPaymentWebhook({ env, result, logTag: "payjs-webhook" });
+}
+
+/** POST /api/pay/webhook/xunhupay */
 export async function xunhupayWebhook(request, env) {
-  return error(501, "NOT_IMPLEMENTED", "xunhupay provider replaced by payjs");
+  let result;
+  try { result = await xunhupay.verifyWebhook(request, env); }
+  catch (err) {
+    console.error("xunhupay webhook verify threw:", err && err.stack || err);
+    return text(`fail:verify_error:${err && err.message || "unknown"}`, { status: 500 });
+  }
+  if (!result.ok) {
+    console.warn("xunhupay webhook rejected:", result.reason);
+    return text(`fail:${result.reason || "unknown"}`, { status: 400 });
+  }
+  return finalizeRealPaymentWebhook({ env, result, logTag: "xunhupay-webhook" });
 }

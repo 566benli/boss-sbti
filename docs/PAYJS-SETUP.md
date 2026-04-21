@@ -1,7 +1,14 @@
-# PayJS 上线 Checklist（Phase 2）
+# PayJS 上线 Checklist（Phase 2 · 备选方案）
 
-> 目标：把 `PAYMENT_MODE` 从 `mock` 切到 `payjs`，让 0.99 元解锁走真实微信 / 支付宝收款。
-> 前置：Worker 代码侧已经在 `_worker/src/lib/providers/payjs.js` 里写好了 Cashier + Native 两套下单路径、MD5 签名、异步通知验签与金额防篡改。你要做的只有「开户 + 填密钥 + 切开关」这三件事。
+> **主推方案是虎皮椒**，见 [`XUNHUPAY-SETUP.md`](./XUNHUPAY-SETUP.md)（零开户费、直接给支付宝）。
+> PayJS 留作备选：合规度和稳定性更高，但有两道门槛——
+> 1. **一次性开户费 ￥300**
+> 2. **新号只给微信，不给支付宝**（需跑够 40 天交易量 + 日均 10 笔 + 日均 100 元才开放申请）
+>
+> 如果你的产品后期做成稳定现金流（月流水 1 万+）、需要企业级合规，再切 PayJS 也不迟。
+>
+> 目标：把 `PAYMENT_MODE` 从 `mock` 切到 `payjs`，让 0.99 元解锁走真实微信支付。
+> 前置：Worker 代码侧已经在 `_worker/src/lib/providers/payjs.js` 里写好了 Cashier + Native 两套下单路径、MD5 签名、异步通知验签与金额防篡改，线上 E2E 10/10 通过。你要做的只有「开户 + 填密钥 + 切开关」。
 
 ---
 

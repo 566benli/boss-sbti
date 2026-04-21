@@ -59,7 +59,7 @@
       full:    (sid) => call("GET",  `/api/report/full?sid=${encodeURIComponent(sid)}`),
     },
     pay: {
-      create: (sid)     => call("POST", "/api/pay/create", { sid }),
+      create: (sid, channel) => call("POST", "/api/pay/create", channel ? { sid, channel } : { sid }),
       status: (orderId) => call("GET",  `/api/pay/status?orderId=${encodeURIComponent(orderId)}`),
       mockWebhook: (orderId, sign) => fetch(
         `${apiBase()}/api/pay/webhook/mock?orderId=${encodeURIComponent(orderId)}&sign=${encodeURIComponent(sign)}`,

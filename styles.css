@@ -334,6 +334,43 @@ h2 {
   font-weight: 500;
 }
 
+.pay-channel-row {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0;
+}
+
+.pay-channel-row:empty {
+  display: none;
+}
+
+.pay-channel-btn {
+  flex: 1;
+  padding: 0.6rem 0.4rem;
+  background: #11151d;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.pay-channel-btn:hover {
+  background: #1a2030;
+  border-color: var(--accent, #f5b14a);
+}
+
+.pay-channel-btn-active {
+  background: #2a2313;
+  border-color: #f5b14a;
+  color: #f5b14a;
+}
+
+.pay-modal-slot:empty {
+  display: none;
+}
+
 .pay-modal-qr {
   display: flex;
   flex-direction: column;
