@@ -14,12 +14,17 @@
     </header>
 
     <main>
-      <section id="pay-success-banner" class="pay-success-banner" hidden>
-        <div class="pay-success-icon">✅</div>
-        <div class="pay-success-text">
-          <strong>支付成功！</strong>
-          <span>你的完整鉴定报告已解锁，可下载保存。</span>
+      <section id="pay-urgent-banner" class="pay-urgent-banner" hidden>
+        <div class="pay-urgent-head">
+          <span class="pay-urgent-icon" aria-hidden="true">❗❗❗</span>
+          <strong class="pay-urgent-title">请您立刻截图保存或分享</strong>
         </div>
+        <p class="pay-urgent-desc">
+          退出后将无法找回本次测试结果，完整报告只属于本次账号。请先下载长图保存，再离开本页面。
+        </p>
+        <button type="button" id="btn-urgent-download" class="primary pay-urgent-cta">
+          📥 立即下载完整鉴定报告（PNG 长图）
+        </button>
       </section>
 
       <section id="report-loading" class="card">
@@ -69,7 +74,9 @@
           <button type="button" id="btn-share-poster" class="secondary share-cta" style="width:100%;margin-top:0.6rem">📸 打开分享长图（带平台一键选）</button>
         </div>
 
-        <button type="button" id="btn-home" class="secondary" style="margin-top:1rem">返回主菜单（登出）</button>
+        <button type="button" id="btn-home" class="secondary" style="margin-top:1rem">
+          我已保存 · 结束并开始新测试
+        </button>
       </section>
     </main>
 
@@ -229,16 +236,27 @@
           el("btn-download-top").addEventListener("click", (e) => directDownload(e.currentTarget));
           el("btn-download-bottom").addEventListener("click", (e) => directDownload(e.currentTarget));
 
-          const fromParam = new URL(location.href).searchParams.get("from");
-          if (fromParam !== "resume") {
-            const banner = el("pay-success-banner");
-            if (banner) banner.hidden = false;
+          /* 红底强提醒：从主菜单点历史进入（from=resume）时文案略缓和；
+           * 其余所有入口（刚付完款 / 刷新 / 其他）都展示最完整的"立刻保存"提醒。*/
+          const urgent = el("pay-urgent-banner");
+          if (urgent) {
+            urgent.hidden = false;
+            const fromParam = new URL(location.href).searchParams.get("from");
+            if (fromParam === "resume") {
+              /* 复看旧报告：不用这么惊心动魄；只保留下载按钮。*/
+              const title = urgent.querySelector(".pay-urgent-title");
+              const desc  = urgent.querySelector(".pay-urgent-desc");
+              if (title) title.textContent = "记得随时截图或下载保存";
+              if (desc)  desc.textContent = "本次账号退出后将无法再次查看，请现在下载长图保留一份。";
+            }
+            const urgentBtn = el("btn-urgent-download");
+            if (urgentBtn) urgentBtn.addEventListener("click", (e) => directDownload(e.currentTarget));
           }
 
           el("btn-home").addEventListener("click", async () => {
-            /* 产品约定：返回主菜单 = 登出当前账号 → 回登录页。*/
+            /* 产品约定：结束并开始新测试 = 登出当前账号 + 回首页（带 after_exit=1）自动建号。*/
             try { await window.BossAPI.account.logout(); } catch {}
-            location.href = "/login.html";
+            location.href = "/?after_exit=1";
           });
         }
 

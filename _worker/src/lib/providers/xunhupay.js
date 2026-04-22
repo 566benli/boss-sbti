@@ -72,7 +72,8 @@ function notifyUrl(env) {
 
 function returnUrl(env, sid, rtToken) {
   const origin = frontendOrigin(env).replace(/\/+$/, "");
-  const base = `${origin}/report.html?sid=${encodeURIComponent(sid)}&from=xunhupay`;
+  /* just_paid=1：让前端 report.html 顶部展示"立刻保存/分享"的强提醒 banner。*/
+  const base = `${origin}/report.html?sid=${encodeURIComponent(sid)}&from=xunhupay&just_paid=1`;
   return rtToken ? `${base}&rt=${encodeURIComponent(rtToken)}` : base;
 }
 

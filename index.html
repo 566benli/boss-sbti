@@ -14,18 +14,10 @@
 
     <main>
       <section id="screen-auth-check" class="card">
-        <p class="muted">正在验证账号…</p>
+        <p class="muted">正在准备你的鉴定环境…</p>
       </section>
 
       <section id="screen-landing" class="card" hidden>
-        <div class="menu-header" id="menu-header">
-          <div class="menu-acct">
-            <span class="menu-acct-code" id="menu-acct-code">ACCT-000</span>
-            <span class="menu-acct-hint" id="menu-acct-hint">当前账号 · 所有记录都归属它</span>
-          </div>
-          <button type="button" id="btn-logout" class="menu-logout">切换账号</button>
-        </div>
-
         <figure class="hero-single" aria-label="加油，把公司干倒闭！">
           <img src="assets/hero-boom.png" alt="加油，把公司干倒闭！" loading="eager" />
         </figure>
@@ -35,14 +27,6 @@
         </h2>
         <p class="warn">请基于真实经历作答，不要替老板洗白。</p>
         <button type="button" id="btn-start" class="primary">开始鉴定</button>
-
-        <div class="history-section" id="history-section">
-          <h3>我的已解锁报告</h3>
-          <ul class="history-list" id="history-list"></ul>
-          <p class="history-empty" id="history-empty" hidden>
-            还没有已解锁的报告 · 完成测试并解锁后，历史记录会出现在这里。
-          </p>
-        </div>
       </section>
 
       <section id="screen-quiz" class="card" hidden>
@@ -60,7 +44,7 @@
         <div id="result-sub"></div>
         <div id="result-radar" class="result-block"></div>
         <p id="result-advice" class="advice"></p>
-        <button type="button" id="btn-retry" class="secondary">返回主菜单（登出）</button>
+        <button type="button" id="btn-retry" class="secondary">结束并开始新的测试</button>
       </section>
     </main>
 
@@ -75,70 +59,77 @@
     <script src="share.js"></script>
     <script src="share-poster.js"></script>
     <script>
-      /* 鉴权闸门：未登录 → /login.html；已登录 → 渲染主菜单 + 历史报告。 */
+      /* 进入闸门：
+       *   - 默认：静默建号（无 cookie 则 create）→ 直接进入测试（Q1），彻底无历史记忆；
+       *   - ?after_exit=1：用户刚从报告页退出 → 登出+新建号，落到极简 landing，让他点"开始鉴定"；
+       *   - 其余异常：展示可重试的错误提示。
+       *
+       * 不再使用 /login.html 作为默认入口；login.html 仍保留作为"老账号码恢复"入口供少数老用户手动访问。
+       */
       (function () {
         const el = (id) => document.getElementById(id);
+        const params = new URLSearchParams(location.search);
+        const afterExit = params.get("after_exit") === "1";
 
-        function fmtDate(ts) {
-          if (!ts) return "";
-          const d = new Date(ts);
-          return d.toLocaleString("zh-CN", {
-            year: "numeric", month: "2-digit", day: "2-digit",
-            hour: "2-digit", minute: "2-digit",
-          });
+        async function ensureFreshAccount() {
+          /* after_exit=1 场景：即便后端 cookie 还没清干净，也强制新建一个全新账号，
+           * 真正做到"退出再进就是新账号"。*/
+          try { await window.BossAPI.account.logout(); } catch {}
+          await window.BossAPI.account.create({});
         }
 
-        function renderHistory(paidReports) {
-          const listHost = el("history-list");
-          const empty = el("history-empty");
-          listHost.innerHTML = "";
-          if (!paidReports || !paidReports.length) {
-            empty.hidden = false;
-            return;
+        async function ensureLoggedIn() {
+          try {
+            await window.BossAPI.account.me();
+            return true;
+          } catch (err) {
+            if (err && (err.status === 401 || err.code === "UNAUTH")) {
+              await window.BossAPI.account.create({});
+              return true;
+            }
+            throw err;
           }
-          empty.hidden = true;
-          paidReports.forEach((r) => {
-            const li = document.createElement("li");
-            li.className = "history-item";
-            const name = (window.BOSS_TYPES && window.BOSS_TYPES[r.mainType]
-              && window.BOSS_TYPES[r.mainType].name) || r.mainType || "—";
-            li.innerHTML = `
-              <div class="history-item-main">
-                <span class="history-item-code">${r.mainType || "—"}｜${name}</span>
-                <span class="history-item-date">${fmtDate(r.paidAt || r.completedAt)}</span>
-              </div>
-              <a class="history-item-cta" href="/report.html?sid=${encodeURIComponent(r.sid)}&from=resume">查看 / 分享 →</a>
-            `;
-            listHost.appendChild(li);
-          });
+        }
+
+        function showLanding() {
+          el("screen-auth-check").hidden = true;
+          el("screen-landing").hidden = false;
+        }
+
+        function startQuizNow() {
+          el("screen-auth-check").hidden = true;
+          /* 由 app.js 暴露全局 startQuiz，这里调用即可把用户直接拉进 Q1。*/
+          if (typeof window.__BOSS_APP_START__ === "function") {
+            window.__BOSS_APP_START__();
+          } else {
+            /* 极罕见：app.js 还没加载完。等一帧再试。*/
+            setTimeout(startQuizNow, 30);
+          }
         }
 
         async function boot() {
           try {
-            const me = await window.BossAPI.account.me();
-            const code = (me.user && me.user.prettyCode) || me.user.code || "—";
-            el("menu-acct-code").textContent = code;
-            el("menu-acct-hint").textContent = me.user.nickname
-              ? `${me.user.nickname} · 所有记录都归属此账号`
-              : "当前账号 · 所有记录都归属它";
-            renderHistory(me.paidReports || []);
-            window.__BOSS_ME__ = me.user;
-            el("screen-auth-check").hidden = true;
-            el("screen-landing").hidden = false;
-          } catch (err) {
-            if (err && (err.status === 401 || err.code === "UNAUTH")) {
-              location.href = "/login.html";
+            if (afterExit) {
+              await ensureFreshAccount();
+              /* 清掉 URL 上的 after_exit=1，避免刷新又回退到 landing。*/
+              const u = new URL(location.href);
+              u.searchParams.delete("after_exit");
+              history.replaceState(null, "", u.toString());
+              showLanding();
               return;
             }
+            await ensureLoggedIn();
+            startQuizNow();
+          } catch (err) {
             el("screen-auth-check").innerHTML =
-              `<p class="warn">账号检查失败：${(err && err.message) || err}</p>
-               <a class="secondary" href="/login.html">去登录</a>`;
+              `<p class="warn">准备账号失败：${(err && err.message) || err}</p>
+               <button type="button" class="secondary" onclick="location.reload()">重试</button>`;
           }
         }
 
-        el("btn-logout").addEventListener("click", async () => {
-          try { await window.BossAPI.account.logout(); } catch {}
-          location.href = "/login.html";
+        el("btn-start").addEventListener("click", () => {
+          el("screen-landing").hidden = true;
+          startQuizNow();
         });
 
         boot();

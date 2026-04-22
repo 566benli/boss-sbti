@@ -22,6 +22,7 @@ export async function createPayment(request, env) {
     `SELECT id, user_id, paid, completed_at FROM sessions WHERE id = ?`,
   ).bind(sid).first();
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  /* createPayment 前面已 requireAccount，这里只会命中"已登录但非本人"一种情况 */
   if (row.user_id && row.user_id !== me.id) {
     return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
   }
@@ -104,9 +105,8 @@ export async function payStatus(request, env) {
 
   if (row.user_id) {
     const me = await requireAccount(request, env);
-    if (!me || me.id !== row.user_id) {
-      return error(403, "FORBIDDEN", "该订单不属于当前账号");
-    }
+    if (!me) return error(401, "UNAUTH", "请先登录账号");
+    if (me.id !== row.user_id) return error(403, "FORBIDDEN", "该订单不属于当前账号");
   }
 
   return ok({

@@ -118,7 +118,7 @@
       const order = await window.BossAPI.pay.create(sid, channel);
       if (order.alreadyPaid) {
         statusLine.textContent = "检测到本次鉴定已付费，正在跳转报告…";
-        setTimeout(() => { window.location.href = `/report.html?sid=${sid}`; }, 600);
+        setTimeout(() => { window.location.href = `/report.html?sid=${sid}&just_paid=1`; }, 600);
         return;
       }
       state.currentOrderId = order.orderId;
@@ -147,7 +147,7 @@
           if (s.status === "paid") {
             pollEl.textContent = "支付成功，正在跳转完整报告…";
             if (typeof opts.onPaid === "function") opts.onPaid({ sid, orderId });
-            else setTimeout(() => { window.location.href = `/report.html?sid=${sid}`; }, 500);
+            else setTimeout(() => { window.location.href = `/report.html?sid=${sid}&just_paid=1`; }, 500);
             return;
           }
         } catch {}
@@ -200,7 +200,7 @@
     }
     if (order.alreadyPaid) {
       statusLine.textContent = "检测到本次鉴定已付费，正在跳转报告…";
-      setTimeout(() => { window.location.href = `/report.html?sid=${sid}`; }, 600);
+      setTimeout(() => { window.location.href = `/report.html?sid=${sid}&just_paid=1`; }, 600);
       return;
     }
     state.currentOrderId = order.orderId;

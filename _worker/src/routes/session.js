@@ -1,7 +1,11 @@
 import { json, ok, error, uuid, nowMs, hashIp, readJsonSafe } from "../lib/util.js";
 import { requireAccount } from "./account.js";
 
-/** 读取 session 并在有 user_id 时校验归属。返回 { row, forbidden }。 */
+/** 读取 session 并在有 user_id 时校验归属。返回 { row, unauth, forbidden }。
+ *  - 老数据 user_id 为 NULL：向后兼容，允许任意访问
+ *  - 新数据 + 匿名访问：unauth → 前端引导登录
+ *  - 新数据 + 已登录但非本人：forbidden → 前端引导切账号
+ */
 async function loadOwnedSession(env, sid, me) {
   const row = await env.DB.prepare(
     `SELECT id, user_id, completed_at, paid, paid_at,
@@ -9,9 +13,9 @@ async function loadOwnedSession(env, sid, me) {
      FROM sessions WHERE id = ?`,
   ).bind(sid).first();
   if (!row) return { row: null };
-  /* 老数据 user_id 为 NULL：向后兼容，允许任意访问；新数据必须匹配 */
-  if (row.user_id && (!me || me.id !== row.user_id)) {
-    return { row, forbidden: true };
+  if (row.user_id) {
+    if (!me) return { row, unauth: true };
+    if (me.id !== row.user_id) return { row, forbidden: true };
   }
   return { row };
 }
@@ -38,8 +42,9 @@ export async function finishSession(request, env) {
   if (!mainType) return error(400, "BAD_REQUEST", "missing mainType");
 
   const me = await requireAccount(request, env);
-  const { row, forbidden } = await loadOwnedSession(env, sid, me);
+  const { row, unauth, forbidden } = await loadOwnedSession(env, sid, me);
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  if (unauth) return error(401, "UNAUTH", "请先登录账号");
   if (forbidden) return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
 
   const e = Number(dim?.E || 0) | 0;
@@ -64,8 +69,9 @@ export async function reportPreview(request, env) {
   if (!sid) return error(400, "BAD_REQUEST", "missing sid");
 
   const me = await requireAccount(request, env);
-  const { row, forbidden } = await loadOwnedSession(env, sid, me);
+  const { row, unauth, forbidden } = await loadOwnedSession(env, sid, me);
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  if (unauth) return error(401, "UNAUTH", "请先登录账号");
   if (forbidden) return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
   if (!row.completed_at) return error(409, "NOT_COMPLETED", "session not finished yet");
   return ok({
@@ -85,8 +91,9 @@ export async function reportFull(request, env) {
   if (!sid) return error(400, "BAD_REQUEST", "missing sid");
 
   const me = await requireAccount(request, env);
-  const { row, forbidden } = await loadOwnedSession(env, sid, me);
+  const { row, unauth, forbidden } = await loadOwnedSession(env, sid, me);
   if (!row) return error(404, "NOT_FOUND", "session not found");
+  if (unauth) return error(401, "UNAUTH", "请先登录账号");
   if (forbidden) return error(403, "FORBIDDEN", "该鉴定不属于当前账号");
   if (!row.completed_at) return error(409, "NOT_COMPLETED", "session not finished yet");
   if (!row.paid) return error(402, "PAYMENT_REQUIRED", "unlock the full report first");

@@ -168,6 +168,23 @@
     renderQuestion();
   }
 
+  /* 去重：不同选项可能把同一道分支题（例如 Q20）插入多次。
+   * 产品约定：玩家不应被迫做同一题两遍。
+   * - insert:X@Y  若 X 已答 → 直接跳到 Y（不再入栈），不产生重复展示；
+   * - goto:X      若 X 已答 → 向后滚动到下一条未答的主线题；
+   * 走到头没法滚动就进 finish。这里加硬性 hop 上限兜底死循环。*/
+  const MAX_DEDUPE_HOPS = 32;
+
+  function advancePastAnswered(target) {
+    let t = target;
+    for (let i = 0; i < MAX_DEDUPE_HOPS && state.answered.has(t); i++) {
+      const n = nextMainlineAfter(t);
+      if (n === t) return null;
+      t = n;
+    }
+    return state.answered.has(t) ? null : t;
+  }
+
   function onChoose(option, question, optionIndex) {
     state.history.push(snapshotState());
     applyOption(option, question, optionIndex);
@@ -189,10 +206,19 @@
       return;
     }
     if (nav.op === "goto") {
-      goTo(nav.target, false);
+      const tgt = advancePastAnswered(nav.target);
+      if (!tgt) { showLockedPreview(); return; }
+      goTo(tgt, false);
       return;
     }
     if (nav.op === "insert") {
+      if (state.answered.has(nav.target)) {
+        /* 重复插入：跳过 X，直接回到主线 resume 点（nav.resume）。*/
+        const tgt = advancePastAnswered(nav.resume);
+        if (!tgt) { showLockedPreview(); return; }
+        goTo(tgt, false);
+        return;
+      }
       state.stack.push(nav.resume);
       goTo(nav.target, true);
       return;
@@ -411,7 +437,8 @@
     }
     window.BossPay.open(state.sid, {
       onPaid: ({ sid }) => {
-        window.location.href = `/report.html?sid=${encodeURIComponent(sid)}`;
+        /* just_paid=1：让 report.html 顶部展示"立刻保存/分享"的强提醒 banner。*/
+        window.location.href = `/report.html?sid=${encodeURIComponent(sid)}&just_paid=1`;
       },
     });
   }
@@ -446,14 +473,16 @@
     }
   }
 
-  document.getElementById("btn-start").addEventListener("click", startQuiz);
-  /* 「返回主菜单」= 登出当前账号 → 跳回登录页。
-   * 产品要求：同一账号重登会自动开始新测试，所以 retry 必须强制清 cookie。*/
+  /* index.html 里已经接管了 #btn-start（因为存在"退出后落地版"和"直进测试版"两种路径），
+   * 这里把 startQuiz 暴露为全局，避免两处重复 addEventListener 造成双份请求。*/
+  window.__BOSS_APP_START__ = startQuiz;
+
+  /* 「结束并开始新的测试」：登出 → 带 after_exit=1 回首页 → 首页自动新建号 + 极简 landing。*/
   document.getElementById("btn-retry").addEventListener("click", async () => {
     try {
       if (window.BossAPI) await window.BossAPI.account.logout();
     } catch {}
-    location.href = "/login.html";
+    location.href = "/?after_exit=1";
   });
 
   initTypeScores();
