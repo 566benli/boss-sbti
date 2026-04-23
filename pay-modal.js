@@ -28,6 +28,60 @@
     return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   }
 
+  /* 微信内置浏览器（以及企业微信 / 微信 Work）会拦截虎皮椒的 H5 WAP 跳转，
+   * 并且"返回商家"按钮只会关闭 webview 回微信聊天，不会触发 return_url。
+   * 所以我们在这种环境里**不下单**，直接引导用户切到外部浏览器。*/
+  function isWeChatBrowser() {
+    return /MicroMessenger|wxwork/i.test(navigator.userAgent || "");
+  }
+
+  async function copyText(s) {
+    try { await navigator.clipboard.writeText(s); return true; }
+    catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = s;
+        ta.style.cssText = "position:fixed;left:-9999px;top:-9999px;";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch { return false; }
+    }
+  }
+
+  function showWeChatGuideOverlay() {
+    const link = location.href;
+    const host = el("div", { class: "wx-guide-host", role: "dialog", "aria-modal": "true" });
+    const mask = el("div", { class: "wx-guide-mask" });
+    const arrow = el("div", { class: "wx-guide-arrow", "aria-hidden": "true" }, "↗");
+    const arrowLabel = el("div", { class: "wx-guide-arrow-label" }, "请点这里 ···");
+    const card = el("div", { class: "wx-guide-card" });
+    card.appendChild(el("h3", { class: "wx-guide-title" }, "请用浏览器打开本页"));
+    card.appendChild(el("p", { class: "wx-guide-desc" },
+      "微信内无法直接唤起支付，也无法正确返回报告页。请点击右上角 ··· 菜单 → 选择「在浏览器打开」，再继续解锁。"));
+    const linkBox = el("div", { class: "wx-guide-link" }, link);
+    card.appendChild(linkBox);
+    const copyBtn = el("button", { class: "primary wx-guide-copy" }, "复制本页链接");
+    copyBtn.addEventListener("click", async () => {
+      const ok = await copyText(link);
+      copyBtn.textContent = ok ? "已复制 · 请到浏览器粘贴打开" : "复制失败，请长按选择上方链接";
+    });
+    card.appendChild(copyBtn);
+    const closeBtn = el("button", { class: "secondary wx-guide-close" }, "我知道了");
+    closeBtn.addEventListener("click", () => {
+      if (host.parentNode) host.parentNode.removeChild(host);
+    });
+    card.appendChild(closeBtn);
+
+    host.appendChild(mask);
+    host.appendChild(arrow);
+    host.appendChild(arrowLabel);
+    host.appendChild(card);
+    document.body.appendChild(host);
+  }
+
   function closeHost(host) {
     if (host && host.parentNode) host.parentNode.removeChild(host);
   }
@@ -160,6 +214,14 @@
 
   async function open(sid, opts) {
     opts = opts || {};
+
+    /* 需求 3 的根治：在微信自带浏览器里，下单 / 支付 / 回跳链条都会坏。
+     * 直接拦截并引导用户切到外部浏览器，避免用户走进"返回商家=回微信聊天列表"的死胡同。*/
+    if (isWeChatBrowser()) {
+      showWeChatGuideOverlay();
+      return;
+    }
+
     const host = el("div", { class: "pay-modal-host" });
     const box = el("div", { class: "pay-modal-card" });
     host.appendChild(el("div", { class: "pay-modal-mask", onclick: () => closeHost(host) }));

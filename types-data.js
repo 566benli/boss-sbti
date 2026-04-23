@@ -153,6 +153,7 @@ window.BOSS_TYPES = {
     behavior: "唯我独尊，员工进办公室像觐见。",
     horror: "★★★★☆",
     keywordDanger: "你是老板我是老板？",
+    image: "assets/bosses/KING.jpg",
   },
   MOON: {
     code: "MOON",
@@ -234,6 +235,7 @@ window.BOSS_TYPES = {
     horror: "☆☆☆☆☆",
     luck: "★★★★★",
     keywordHappy: "大家来领红包。",
+    image: "assets/bosses/GOLD.jpg",
   },
   COVER: {
     code: "COVER",
@@ -243,6 +245,7 @@ window.BOSS_TYPES = {
     horror: "☆☆☆☆☆",
     luck: "★★★★★",
     keywordHappy: "这个我来处理。",
+    image: "assets/bosses/COVER.jpg",
   },
   NURSE: {
     code: "NURSE",
@@ -252,6 +255,7 @@ window.BOSS_TYPES = {
     horror: "☆☆☆☆☆",
     heal: "★★★★★",
     keywordSafe: "你先调整一下，事情我们一起想办法。",
+    image: "assets/bosses/NURSE.jpg",
   },
 };
 

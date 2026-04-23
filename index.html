@@ -14,7 +14,7 @@
 
     <main>
       <section id="screen-auth-check" class="card">
-        <p class="muted">正在准备你的鉴定环境…</p>
+        <p class="muted">正在加载…</p>
       </section>
 
       <section id="screen-landing" class="card" hidden>
@@ -109,17 +109,19 @@
 
         async function boot() {
           try {
+            /* 产品要求：所有入口都先显示封面页（hero + 标题 + 开始鉴定按钮）。
+             * - after_exit=1：强制清 cookie + 新建号，保证"退出再进 = 全新账号"；
+             * - 其它情形：静默保证已登录（没有 cookie 就自动建号）。
+             * 两条路径都走到 showLanding()，用户点击按钮才进入 Q1。*/
             if (afterExit) {
               await ensureFreshAccount();
-              /* 清掉 URL 上的 after_exit=1，避免刷新又回退到 landing。*/
               const u = new URL(location.href);
               u.searchParams.delete("after_exit");
               history.replaceState(null, "", u.toString());
-              showLanding();
-              return;
+            } else {
+              await ensureLoggedIn();
             }
-            await ensureLoggedIn();
-            startQuizNow();
+            showLanding();
           } catch (err) {
             el("screen-auth-check").innerHTML =
               `<p class="warn">准备账号失败：${(err && err.message) || err}</p>
