@@ -96,6 +96,82 @@
           el("screen-landing").hidden = false;
         }
 
+        /* 微信内置浏览器 / 企业微信检测。
+         * 复用 pay-modal.js 同名函数的逻辑，但独立定义，避免加载顺序依赖。*/
+        function isWeChatBrowser() {
+          return /MicroMessenger|wxwork/i.test(navigator.userAgent || "");
+        }
+
+        async function copyTextFallback(s) {
+          try { await navigator.clipboard.writeText(s); return true; } catch {}
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = s;
+            ta.style.cssText = "position:fixed;left:-9999px;top:-9999px;";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            return true;
+          } catch { return false; }
+        }
+
+        /* 在封面页启动阶段，若检测到微信 UA，立即展示引导蒙层，阻止用户进入测试。
+         * 复用 styles.css 里的 .wx-guide-* 样式（上一版已添加）。*/
+        function showWeChatGuide() {
+          el("screen-auth-check").hidden = true;
+          const link = location.href;
+          const host = document.createElement("div");
+          host.className = "wx-guide-host";
+          host.setAttribute("role", "dialog");
+          host.setAttribute("aria-modal", "true");
+
+          const mask = document.createElement("div");
+          mask.className = "wx-guide-mask";
+
+          const arrow = document.createElement("div");
+          arrow.className = "wx-guide-arrow";
+          arrow.setAttribute("aria-hidden", "true");
+          arrow.textContent = "↗";
+
+          const arrowLabel = document.createElement("div");
+          arrowLabel.className = "wx-guide-arrow-label";
+          arrowLabel.textContent = "请点这里 ···";
+
+          const card = document.createElement("div");
+          card.className = "wx-guide-card";
+
+          const title = document.createElement("h3");
+          title.className = "wx-guide-title";
+          title.textContent = "请用浏览器打开本页";
+          card.appendChild(title);
+
+          const desc = document.createElement("p");
+          desc.className = "wx-guide-desc";
+          desc.textContent = "在微信内无法直接完成支付，也无法正确返回报告页。请点击右上角 ··· 菜单 → 选择「在浏览器打开」，再来鉴定老板！";
+          card.appendChild(desc);
+
+          const linkBox = document.createElement("div");
+          linkBox.className = "wx-guide-link";
+          linkBox.textContent = link;
+          card.appendChild(linkBox);
+
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "primary wx-guide-copy";
+          copyBtn.textContent = "复制本页链接";
+          copyBtn.addEventListener("click", async () => {
+            const ok = await copyTextFallback(link);
+            copyBtn.textContent = ok ? "已复制 · 请到浏览器粘贴打开" : "复制失败，请长按选择上方链接";
+          });
+          card.appendChild(copyBtn);
+
+          host.appendChild(mask);
+          host.appendChild(arrow);
+          host.appendChild(arrowLabel);
+          host.appendChild(card);
+          document.body.appendChild(host);
+        }
+
         function startQuizNow() {
           el("screen-auth-check").hidden = true;
           /* 由 app.js 暴露全局 startQuiz，这里调用即可把用户直接拉进 Q1。*/
@@ -121,6 +197,9 @@
             } else {
               await ensureLoggedIn();
             }
+            /* 微信内置浏览器：引导切到外部浏览器，不让用户做完题再被拦截。*/
+            if (isWeChatBrowser()) { showWeChatGuide(); return; }
+
             showLanding();
           } catch (err) {
             el("screen-auth-check").innerHTML =

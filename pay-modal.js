@@ -128,16 +128,14 @@
       return;
     }
 
-    // 移动端且有 payUrl：CTA 跳转
+    // 移动端且有 payUrl：当前页直接跳转（不开新标签），支付后由 return_url 自动回到报告页。
     if (isMobile() && order.payUrl) {
-      mountNode.appendChild(el("a", {
-        class: "pay-modal-cta",
-        href: order.payUrl,
-        target: "_blank",
-        rel: "noopener",
-      }, `前往支付 ¥${order.priceYuan}`));
+      const payUrl = order.payUrl;
+      const ctaBtn = el("button", { class: "pay-modal-cta" }, `前往支付 ¥${order.priceYuan}`);
+      ctaBtn.addEventListener("click", () => { window.location.href = payUrl; });
+      mountNode.appendChild(ctaBtn);
       mountNode.appendChild(el("p", { class: "pay-modal-hint" },
-        "支付完成后请返回本页面，系统会在几秒内自动解锁。"));
+        "支付完成后将自动返回鉴定报告，请勿关闭本应用。"));
       return;
     }
 
