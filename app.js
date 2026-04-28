@@ -127,7 +127,8 @@
     if (!q) return;
     state.answered.add(q.id);
     el("quiz-phase").textContent = q.phase ? `阶段 ${q.phase} / 4` : "";
-    el("question-title").textContent = q.title || "";
+    el("question-title").textContent = q.scenario ? "" : (q.title || "");
+    el("question-title").hidden = !!q.scenario;
     el("question-scenario").textContent = q.scenario || "";
     el("question-scenario").hidden = !q.scenario;
     const opts = el("question-options");

@@ -23,58 +23,58 @@
     phase: 1,
     title: "下班后，你老板最常见的状态是？",
     options: [
-      opt("基本不找人，除非真有紧急情况。", { E: -1, C: -1, T: -1, M: 2 }, { NURSE: 1, COVER: 1 }, "goto:Q2"),
-      opt("晚上 11 点突然复活：「睡了吗？有个小事。」", { E: 2, C: 2, T: 1, M: -1 }, { NIGHTer: 5, OTOT: 1 }, "insert:Q13@Q2"),
-      opt("电话、微信、钉钉、邮件一起轰炸。", { E: 1, C: 4, T: 1, M: -2 }, { RING: 5, CCTV: 2 }, "insert:Q14@Q2"),
-      opt("白天不急，晚上突然说明早就要。", { E: 3, C: 2, T: 1, M: -2 }, { NIGHTer: 3, OTOT: 2, FOG: 1 }, "insert:Q13@Q2"),
+      opt("基本不找我", { E: -1, C: -1, T: -1, M: 2 }, { NURSE: 1, COVER: 1 }, "goto:Q2"),
+      opt("有时候会发消息给我「睡了吗？有个小事」", { E: 2, C: 2, T: 1, M: -1 }, { NIGHTer: 5, OTOT: 1 }, "insert:Q13@Q2"),
+      opt("电话、微信、钉钉、邮件一起轰炸", { E: 1, C: 4, T: 1, M: -2 }, { RING: 5, CCTV: 2 }, "insert:Q14@Q2"),
+      opt("某项任务白天不急，晚上突然说明早就要结果", { E: 3, C: 2, T: 1, M: -2 }, { NIGHTer: 3, OTOT: 2, FOG: 1 }, "insert:Q13@Q2"),
     ],
   };
 
   Q.Q2 = {
     id: "Q2",
     phase: 1,
-    title: "你请假时，他的第一反应更像？",
+    title: "你请假时，TA的第一反应更像？",
     options: [
-      opt("「那你先休息，工作我们来协调。」", { E: -1, C: -2, T: -1, M: 3 }, { NURSE: 4, COVER: 2 }, "goto:Q3"),
-      opt("「怎么又请假？」", { E: 2, C: 3, T: 2, M: -2 }, { LEAVE: 5, DADDY: 1, PUAer: 1 }, "insert:Q15@Q3"),
-      opt("表面批准，背后阴阳你。", { E: 1, C: 1, T: 3, M: -1 }, { AUV: 3, MASK: 2 }, "insert:Q20@Q3"),
-      opt("可以请，但线上必须随时在线。", { E: 3, C: 3, T: 1, M: -2 }, { LEAVE: 3, CCTV: 2, OTOT: 1 }, "insert:Q15@Q3"),
+      opt("会同意让我休息", { E: -1, C: -2, T: -1, M: 3 }, { NURSE: 4, COVER: 2 }, "goto:Q3"),
+      opt("问「怎么又请假？」", { E: 2, C: 3, T: 2, M: -2 }, { LEAVE: 5, DADDY: 1, PUAer: 1 }, "insert:Q15@Q3"),
+      opt("不情不愿地批准", { E: 1, C: 1, T: 3, M: -1 }, { AUV: 3, MASK: 2 }, "insert:Q20@Q3"),
+      opt("可以请，但线上必须随时在线", { E: 3, C: 3, T: 1, M: -2 }, { LEAVE: 3, CCTV: 2, OTOT: 1 }, "insert:Q15@Q3"),
     ],
   };
 
   Q.Q3 = {
     id: "Q3",
     phase: 1,
-    title: "你做出成果后，他通常怎么处理？",
+    title: "你做出成果后，TA通常怎么处理？",
     options: [
-      opt("明确说是谁做的，当众夸你并帮你争取回报。", { E: -3, C: 0, T: -1, M: 4 }, { GOLD: 4, COVER: 2 }, "goto:Q4"),
-      opt("汇报时变成「这项目是我一手带出来的」。", { E: 3, C: 1, T: 2, M: -3 }, { THIEF: 5, ROACH: 1 }, "insert:Q16@Q4"),
-      opt("成果归他，锅归你。", { E: 2, C: 1, T: 3, M: -3 }, { THIEF: 3, ROACH: 3, MASK: 1 }, "insert:Q17@Q4"),
-      opt("不抢功，但也不会帮你争取什么。", { E: 1, C: 0, T: 0, M: -1 }, { BUSY: 1, TRASH: 1 }, "goto:Q4"),
+      opt("夸你并给予实在奖励", { E: -3, C: 0, T: -1, M: 4 }, { GOLD: 4, COVER: 2 }, "goto:Q4"),
+      opt("成果归TA名下", { E: 3, C: 1, T: 2, M: -3 }, { THIEF: 5, ROACH: 1 }, "insert:Q16@Q4"),
+      opt("敷衍口头表扬", { E: 2, C: 1, T: 3, M: -3 }, { THIEF: 3, ROACH: 3, MASK: 1 }, "insert:Q17@Q4"),
+      opt("不抢功，但也不帮你争取什么", { E: 1, C: 0, T: 0, M: -1 }, { BUSY: 1, TRASH: 1 }, "goto:Q4"),
     ],
   };
 
   Q.Q4 = {
     id: "Q4",
     phase: 1,
-    title: "项目出事时，他最像？",
+    title: "项目出事时，TA最像？",
     options: [
-      opt("先解决问题，负起领导责任，再向上承担压力。", { E: -1, C: -1, T: -1, M: 4 }, { COVER: 5 }, "goto:Q5"),
-      opt("关键时刻消失，事后爬出来复盘总结。", { E: 1, C: 0, T: 2, M: -4 }, { ROACH: 5, BUSY: 1 }, "insert:Q18@Q5"),
-      opt("当场情绪大爆发，指责全体员工。", { E: 1, C: 1, T: 4, M: -3 }, { BOOM: 5, TRASH: 1 }, "insert:Q19@Q5"),
-      opt("说「你们怎么搞的」，自己没有方案。", { E: 1, C: 1, T: 2, M: -4 }, { ROACH: 3, TRASH: 3 }, "goto:Q5"),
+      opt("主动冲锋，解决问题，承担领导角色", { E: -1, C: -1, T: -1, M: 4 }, { COVER: 5 }, "goto:Q5"),
+      opt("缩头乌龟，事后诸葛", { E: 1, C: 0, T: 2, M: -4 }, { ROACH: 5, BUSY: 1 }, "insert:Q18@Q5"),
+      opt("当场愤怒指责，只有情绪不解决问题", { E: 1, C: 1, T: 4, M: -3 }, { BOOM: 5, TRASH: 1 }, "insert:Q19@Q5"),
+      opt("一筹莫展，没有方案，扔给员工解决", { E: 1, C: 1, T: 2, M: -4 }, { ROACH: 3, TRASH: 3 }, "goto:Q5"),
     ],
   };
 
   Q.Q5 = {
     id: "Q5",
     phase: 2,
-    title: "他布置任务时，需求通常是什么样？",
+    title: "TA布置任务时，需求通常是什么样？",
     options: [
-      opt("目标、标准、截止时间、优先级都很清楚。", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2, GOLD: 1 }, "goto:Q6"),
-      opt("「感觉不对，你再优化一下。」", { E: 1, C: 1, T: 1, M: -4 }, { FOG: 5 }, "insert:Q21@Q6"),
-      opt("今天要 A，明天要 B，后天说一开始要的就是 C。", { E: 2, C: 1, T: 2, M: -4 }, { FOG: 4, MASK: 2, TRASH: 1 }, "insert:Q21@Q6"),
-      opt("预算三块五，目标冲火星。", { E: 3, C: 1, T: 1, M: -3 }, { MOON: 5, CAKE: 1 }, "insert:Q22@Q6"),
+      opt("目标、标准、截止时间、优先级都清晰明了", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2, GOLD: 1 }, "goto:Q6"),
+      opt("「感觉不对，你再优化一下」", { E: 1, C: 1, T: 1, M: -4 }, { FOG: 5 }, "insert:Q21@Q6"),
+      opt("今天要 A，明天要 B，后天又要 C", { E: 2, C: 1, T: 2, M: -4 }, { FOG: 4, MASK: 2, TRASH: 1 }, "insert:Q21@Q6"),
+      opt("预算三块五，目标冲火星", { E: 3, C: 1, T: 1, M: -3 }, { MOON: 5, CAKE: 1 }, "insert:Q22@Q6"),
     ],
   };
 
@@ -82,169 +82,170 @@
   Q.Q6 = {
     id: "Q6",
     phase: 2,
-    title: "他看待加班的态度是？",
+    title: "TA看待加班的态度是？",
     options: [
-      opt("尽量避免加班，真加班会有加班费。", { E: -3, C: -1, T: -1, M: 3 }, { GOLD: 2, NURSE: 2 }, "random@peek"),
-      opt("「今天辛苦一下」，但每天都是今天。", { E: 5, C: 1, T: 1, M: -2 }, { OTOT: 5, SUCKER: 2 }, "random@peek"),
-      opt("「年轻人多锻炼」，但钱和休息都不给。", { E: 5, C: 0, T: 2, M: -3 }, { SUCKER: 5, MONK: 2 }, "random@peek"),
-      opt("嘴上不强制，实际上不加班就被边缘化。", { E: 4, C: 2, T: 3, M: -3 }, { MASK: 3, PUAer: 2, OTOT: 2 }, "random@peek"),
+      opt("一般不加班，加班会有加班费", { E: -3, C: -1, T: -1, M: 3 }, { GOLD: 2, NURSE: 2 }, "random@peek"),
+      opt("「今天辛苦一下」，但每天都是今天", { E: 5, C: 1, T: 1, M: -2 }, { OTOT: 5, SUCKER: 2 }, "random@peek"),
+      opt("不强制，但加班已成默认常态", { E: 5, C: 0, T: 2, M: -3 }, { SUCKER: 5, MONK: 2 }, "random@peek"),
+      opt("「年轻人要多锻炼」", { E: 4, C: 2, T: 3, M: -3 }, { MASK: 3, PUAer: 2, OTOT: 2 }, "random@peek"),
     ],
   };
 
   Q.Q7 = {
     id: "Q7",
     phase: 2,
-    title: "他开会的风格是？",
+    title: "TA开会的风格是？",
     options: [
-      opt("偶尔开会，每次都有议程、有结论。", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2 }, "goto:Q8"),
-      opt("「我来简单说两句」，然后说了两小时。", { E: 1, C: 1, T: 1, M: -2 }, { TEDX: 5 }, "goto:Q8"),
-      opt("一天八个会，每个会都是「同步一下」。", { E: 2, C: 2, T: 0, M: -3 }, { BUSY: 4, TEDX: 2 }, "goto:Q8"),
-      opt("开会不干正事，要么打鸡血要么批斗大会。", { E: 1, C: 2, T: 3, M: -3 }, { KING: 2, CULT: 3 }, "goto:Q8"),
+      opt("偶尔开会，高效完成", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2 }, "goto:Q8"),
+      opt("「我来简单说两句」，然后说很久", { E: 1, C: 1, T: 1, M: -2 }, { TEDX: 5 }, "goto:Q8"),
+      opt("一天八个会", { E: 2, C: 2, T: 0, M: -3 }, { BUSY: 4, TEDX: 2 }, "goto:Q8"),
+      opt("开会要么打鸡血要么批斗大会", { E: 1, C: 2, T: 3, M: -3 }, { KING: 2, CULT: 3 }, "goto:Q8"),
     ],
   };
 
   Q.Q8 = {
     id: "Q8",
     phase: 2,
-    title: "当你提出不同意见时，他通常？",
+    title: "当你提出不同意见时，TA通常？",
     options: [
-      opt("会听，有道理就改。", { E: -1, C: -1, T: -1, M: 3 }, { COVER: 2, NURSE: 1 }, "goto:Q9"),
-      opt("「不，我以前都是这么做的。」", { E: 1, C: 1, T: 1, M: -4 }, { BRICK: 5 }, "goto:Q9"),
+      opt("会认真理解并接纳", { E: -1, C: -1, T: -1, M: 3 }, { COVER: 2, NURSE: 1 }, "goto:Q9"),
+      opt("「不，我以前都不是这么做的」", { E: 1, C: 1, T: 1, M: -4 }, { BRICK: 5 }, "goto:Q9"),
       opt("「你是老板我是老板？」", { E: 1, C: 3, T: 3, M: -3 }, { KING: 5, DADDY: 1 }, "goto:Q9"),
-      opt("表面说「嗯，挺好」，之后开始冷处理。", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 4, MASK: 3 }, "insert:Q20@Q9"),
+      opt("敷衍或者冷处理", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 4, MASK: 3 }, "insert:Q20@Q9"),
     ],
   };
 
   Q.Q9 = {
     id: "Q9",
     phase: 2,
-    title: "他最喜欢用什么激励员工？",
+    title: "TA最喜欢用什么激励员工？",
     options: [
-      opt("给钱、给资源、给机会。", { E: -4, C: 0, T: -1, M: 4 }, { GOLD: 5, COVER: 1 }, "goto:Q10"),
-      opt("讲奉献、格局、使命感。", { E: 3, C: 1, T: 2, M: -2 }, { SAINT: 5, MONK: 2 }, "goto:Q10"),
-      opt("说「公司将来不会亏待你的」，但实际什么都看不见。", { E: 4, C: 0, T: 1, M: -2 }, { CAKE: 5, SUCKER: 1 }, "insert:Q24@Q10"),
-      opt("说「吃亏是福，你要懂得感恩」。", { E: 3, C: 1, T: 4, M: -3 }, { PUAer: 5, SAINT: 2, SUCKER: 1 }, "insert:Q25@Q10"),
+      opt("给钱、给资源、给机会", { E: -4, C: 0, T: -1, M: 4 }, { GOLD: 5, COVER: 1 }, "goto:Q10"),
+      opt("讲奉献、格局、使命感", { E: 3, C: 1, T: 2, M: -2 }, { SAINT: 5, MONK: 2 }, "goto:Q10"),
+      opt("万能金句「公司将来不会亏待你的」", { E: 4, C: 0, T: 1, M: -2 }, { CAKE: 5, SUCKER: 1 }, "insert:Q24@Q10"),
+      opt("说「吃亏是福，不要那么计较」", { E: 3, C: 1, T: 4, M: -3 }, { PUAer: 5, SAINT: 2, SUCKER: 1 }, "insert:Q25@Q10"),
     ],
   };
 
   Q.Q10 = {
     id: "Q10",
     phase: 2,
-    title: "他情绪稳定吗？",
+    title: "TA情绪稳定吗？",
     options: [
-      opt("稳定，压力大也不会乱伤人。", { E: -1, C: 0, T: -3, M: 3 }, { NURSE: 2, COVER: 2 }, "goto:Q11"),
-      opt("一句话不对就暴怒。", { E: 1, C: 1, T: 5, M: -3 }, { BOOM: 5 }, "insert:Q19@Q11"),
-      opt("不直接爆炸，但每天阴阳怪气。", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 4, MASK: 1 }, "insert:Q20@Q11"),
-      opt("表面温柔，背后使坏。", { E: 1, C: 1, T: 4, M: -2 }, { MASK: 5 }, "insert:Q20@Q11"),
+      opt("很稳定", { E: -1, C: 0, T: -3, M: 3 }, { NURSE: 2, COVER: 2 }, "goto:Q11"),
+      opt("一句话不对就发脾气", { E: 1, C: 1, T: 5, M: -3 }, { BOOM: 5 }, "insert:Q19@Q11"),
+      opt("不直接骂，但阴阳怪气", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 4, MASK: 1 }, "insert:Q20@Q11"),
+      opt("表面温柔，实际爱记仇给人穿小鞋", { E: 1, C: 1, T: 4, M: -2 }, { MASK: 5 }, "insert:Q20@Q11"),
     ],
   };
 
   Q.Q11 = {
     id: "Q11",
     phase: 3,
-    title: "他能力怎么样？",
+    title: "TA能力怎么样？",
     options: [
-      opt("有能力，也愿意承担责任。", { E: -1, C: 0, T: -1, M: 4 }, { COVER: 3, GOLD: 1 }, "goto:Q12"),
-      opt("不懂业务，但特别爱指挥。", { E: 1, C: 2, T: 2, M: -5 }, { TRASH: 5 }, "goto:Q12"),
-      opt("固执到三头牛都拉不动。", { E: 1, C: 1, T: 1, M: -4 }, { BRICK: 5 }, "goto:Q12"),
-      opt("每天忙得飞起，但没有有效产出。", { E: 1, C: 2, T: 0, M: -4 }, { BUSY: 5 }, "goto:Q12"),
+      opt("能力很强，团队楷模", { E: -1, C: 0, T: -1, M: 4 }, { COVER: 3, GOLD: 1 }, "goto:Q12"),
+      opt("不专业，但爱瞎指挥", { E: 1, C: 2, T: 2, M: -5 }, { TRASH: 5 }, "goto:Q12"),
+      opt("不怎么样，还很固执", { E: 1, C: 1, T: 1, M: -4 }, { BRICK: 5 }, "goto:Q12"),
+      opt("每天都很忙，但没有实际产出", { E: 1, C: 2, T: 0, M: -4 }, { BUSY: 5 }, "goto:Q12"),
     ],
   };
 
   Q.Q12 = {
     id: "Q12",
     phase: 4,
-    title: "如果用一句话总结这个老板，他更像？",
+    title: "如果用一句话总结这个老板，TA更像？",
     options: [
-      opt("少见的正常成年人。", { E: -3, C: -3, T: -3, M: 5 }, { COVER: 3, NURSE: 3, GOLD: 2 }, "finish"),
-      opt("活着就是为了压榨别人。", { E: 5, C: 1, T: 2, M: -3 }, { SUCKER: 4, OTOT: 2 }, "finish"),
-      opt("办公室情绪污染源。", { E: 1, C: 1, T: 5, M: -3 }, { PUAer: 2, BOOM: 2, AUV: 2, MASK: 1 }, "finish"),
-      opt("人菜瘾大还爱装。", { E: 1, C: 2, T: 2, M: -5 }, { TRASH: 4, BUSY: 2, TEDX: 1 }, "finish"),
+      opt("成熟优秀，善解人意", { E: -3, C: -3, T: -3, M: 5 }, { COVER: 3, NURSE: 3, GOLD: 2 }, "finish"),
+      opt("天天压榨员工", { E: 5, C: 1, T: 2, M: -3 }, { SUCKER: 4, OTOT: 2 }, "finish"),
+      opt("办公室情绪污染源", { E: 1, C: 1, T: 5, M: -3 }, { PUAer: 2, BOOM: 2, AUV: 2, MASK: 1 }, "finish"),
+      opt("人菜瘾大还爱装", { E: 1, C: 2, T: 2, M: -5 }, { TRASH: 4, BUSY: 2, TEDX: 1 }, "finish"),
     ],
   };
 
   /* ---------- 第二阶段：情景题 / 分支追问题 Q13–Q28 ---------- */
+  /* 注意：title 字段为内部标签，不在测试界面展示；scenario 为用户看到的题目内容 */
 
   Q.Q13 = {
     id: "Q13",
     phase: 2,
-    title: "深夜需求情境题",
+    title: "",
     scenario:
-      "晚上 11:47，你已经洗完澡躺下，老板发来一句：「睡了吗？有个小事。」第二天早上你发现这个「小事」需要改 6 页 PPT、补 3 组数据、重写结论。",
+      "想象一下，晚上你洗完澡美美躺下睡觉，第二天早上你醒来发现老板昨天晚上发消息说让你临时办一件小事，且这个「小事」其实很麻烦。以下什么情景最可能出现？",
     options: [
-      opt("你第二天早上才回复，他能理解。", { E: -1, C: -1, T: -1, M: 2 }, { NURSE: 2 }, "return"),
-      opt("他问：「昨晚怎么没回？很急啊。」", { E: 2, C: 3, T: 1, M: -2 }, { NIGHTer: 4, RING: 2 }, "return"),
-      opt("他说：「我以为这个对你很快。」", { E: 3, C: 1, T: 2, M: -2 }, { OTOT: 3, SUCKER: 2 }, "return"),
-      opt("他不骂，但第二天阴阳：「睡得挺好吧。」", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 3, MASK: 2 }, "return"),
+      opt("你回复TA之后，无事发生", { E: -1, C: -1, T: -1, M: 2 }, { NURSE: 2 }, "return"),
+      opt("TA问：「昨晚怎么没回？很急啊！」", { E: 2, C: 3, T: 1, M: -2 }, { NIGHTer: 4, RING: 2 }, "return"),
+      opt("TA说：「我以为你能很快搞完呢」", { E: 3, C: 1, T: 2, M: -2 }, { OTOT: 3, SUCKER: 2 }, "return"),
+      opt("TA不骂，但第二天阴阳：「睡得挺好吧」", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 3, MASK: 2 }, "return"),
     ],
   };
 
   Q.Q14 = {
     id: "Q14",
     phase: 2,
-    title: "连环催命情境题",
+    title: "",
     scenario:
-      "你在地铁里信号不好，10 分钟没回消息。出站后手机显示：微信 4 条、钉钉 3 条、电话 2 个、邮件 1 封。",
+      "想象一下，你在地铁里信号不好，10 分钟没回消息。出站后手机显示：微信 4 条、钉钉 3 条、电话 2 个、邮件 1 封。以下什么情景最可能出现？",
     options: [
-      opt("他说：「刚才不方便吧？有时间了处理一下。」", { E: -1, C: -2, T: -1, M: 2 }, { NURSE: 2, COVER: 1 }, "return"),
-      opt("第一句：「你刚才怎么没回？」", { E: 1, C: 4, T: 1, M: -2 }, { CCTV: 4, RING: 2 }, "return"),
-      opt("他说：「这点响应速度都没有？」", { E: 2, C: 4, T: 2, M: -3 }, { RING: 5, PUAer: 1 }, "return"),
-      opt("嘴上说没事，会上点名你「响应慢」。", { E: 1, C: 3, T: 4, M: -2 }, { MASK: 3, AUV: 2, CCTV: 1 }, "return"),
+      opt("TA说：「有时间了处理一下」", { E: -1, C: -2, T: -1, M: 2 }, { NURSE: 2, COVER: 1 }, "return"),
+      opt("第一句：「你刚才在干嘛？」", { E: 1, C: 4, T: 1, M: -2 }, { CCTV: 4, RING: 2 }, "return"),
+      opt("TA说：「工作响应速度太慢了吧」", { E: 2, C: 4, T: 2, M: -3 }, { RING: 5, PUAer: 1 }, "return"),
+      opt("嘴上说没事，会上点名你「响应慢」", { E: 1, C: 3, T: 4, M: -2 }, { MASK: 3, AUV: 2, CCTV: 1 }, "return"),
     ],
   };
 
   Q.Q15 = {
     id: "Q15",
     phase: 2,
-    title: "请假审讯情境题",
+    title: "",
     scenario:
-      "你发烧 39 度，想请一天病假。他回复：「怎么又请假？」你解释身体情况后，他更可能说：",
+      "想象一下，你头痛不适，想请一天病假。TA回复：「怎么又请假？」你解释身体情况后，TA更可能说：",
     options: [
-      opt("「先休息，工作我安排别人接一下。」", { E: -2, C: -2, T: -2, M: 4 }, { NURSE: 4, COVER: 2 }, "return"),
-      opt("「那你能不能线上看一下？不用太久。」", { E: 3, C: 4, T: 2, M: -3 }, { LEAVE: 5, CCTV: 2, OTOT: 1 }, "return"),
-      opt("「最近大家都忙，你这个时间点请假不合适。」", { E: 3, C: 3, T: 3, M: -3 }, { LEAVE: 4, PUAer: 2 }, "return"),
-      opt("「你要学会对自己的工作负责。」", { E: 2, C: 2, T: 4, M: -3 }, { DADDY: 3, PUAer: 3, LEAVE: 2 }, "return"),
+      opt("「那你好好休息吧」", { E: -2, C: -2, T: -2, M: 4 }, { NURSE: 4, COVER: 2 }, "return"),
+      opt("「那你能不能线上看一下？不用太久」", { E: 3, C: 4, T: 2, M: -3 }, { LEAVE: 5, CCTV: 2, OTOT: 1 }, "return"),
+      opt("「大家都不容易，你这个时间点请假不合适」", { E: 3, C: 3, T: 3, M: -3 }, { LEAVE: 4, PUAer: 2 }, "return"),
+      opt("「你要学会对自己的工作负责」", { E: 2, C: 2, T: 4, M: -3 }, { DADDY: 3, PUAer: 3, LEAVE: 2 }, "return"),
     ],
   };
 
   Q.Q16 = {
     id: "Q16",
     phase: 2,
-    title: "抢功现场题",
+    title: "",
     scenario:
-      "你熬夜做完方案，大老板会上夸项目。直属老板立刻说：「这个项目是我一手带出来的。」",
+      "想象一下，你熬夜做完方案，大老板会上夸项目。直属老板立刻说：「这个项目是我一手带出来的。」接着更有可能发生的是：",
     options: [
-      opt("他会补一句：「具体执行主要是 XX 做的。」", { E: -2, C: 0, T: -1, M: 3 }, { GOLD: 2, COVER: 2 }, "return"),
-      opt("全程不提你，会后还让你把材料发他。", { E: 4, C: 1, T: 2, M: -4 }, { THIEF: 5, SUCKER: 1 }, "return"),
-      opt("如果项目出问题，他会说「这个部分是你负责的吧」。", { E: 3, C: 1, T: 3, M: -5 }, { THIEF: 4, ROACH: 3, MASK: 1 }, "return"),
-      opt("他说「不要太计较个人得失」。", { E: 3, C: 1, T: 4, M: -3 }, { PUAer: 3, SAINT: 2, THIEF: 2 }, "return"),
+      opt("TA会补充「具体执行主要靠 XX」（点名你）", { E: -2, C: 0, T: -1, M: 3 }, { GOLD: 2, COVER: 2 }, "return"),
+      opt("全程不提你，会后让你把材料发TA", { E: 4, C: 1, T: 2, M: -4 }, { THIEF: 5, SUCKER: 1 }, "return"),
+      opt("如果项目出问题，TA会说「这个部分是你负责的吧」", { E: 3, C: 1, T: 3, M: -5 }, { THIEF: 4, ROACH: 3, MASK: 1 }, "return"),
+      opt("TA私下里和你说「不要太计较个人得失」", { E: 3, C: 1, T: 4, M: -3 }, { PUAer: 3, SAINT: 2, THIEF: 2 }, "return"),
     ],
   };
 
   Q.Q17 = {
     id: "Q17",
     phase: 2,
-    title: "背锅现场题",
+    title: "",
     scenario:
-      "客户指出一个错误，这个错误其实来自老板前一天临时改的方向。老板在群里说：「你们怎么搞的？」",
+      "想象一下，客户指出一个错误，这个错误其实来自老板前一天临时改的方向。TA会在群里说：",
     options: [
-      opt("私下承认判断有问题，并一起修正。", { E: -1, C: 0, T: -1, M: 4 }, { COVER: 4 }, "return"),
+      opt("承认错误，表达抱歉且鼓励修正", { E: -1, C: 0, T: -1, M: 4 }, { COVER: 4 }, "return"),
       opt("公开不认，私下说「你们怎么没提醒我？」", { E: 2, C: 1, T: 4, M: -4 }, { ROACH: 4, MASK: 2 }, "return"),
-      opt("直接把锅扣给执行的人。", { E: 3, C: 1, T: 3, M: -5 }, { ROACH: 4, THIEF: 2, TRASH: 1 }, "return"),
-      opt("讲「流程意识」「责任意识」，但没有解决方案。", { E: 1, C: 1, T: 3, M: -4 }, { DADDY: 2, TEDX: 2, TRASH: 2 }, "return"),
+      opt("直接把锅扣给执行的人", { E: 3, C: 1, T: 3, M: -5 }, { ROACH: 4, THIEF: 2, TRASH: 1 }, "return"),
+      opt("讲「责任意识」，但没有解决方案", { E: 1, C: 1, T: 3, M: -4 }, { DADDY: 2, TEDX: 2, TRASH: 2 }, "return"),
     ],
   };
 
   Q.Q18 = {
     id: "Q18",
     phase: 2,
-    title: "小强生存题",
+    title: "",
     scenario:
-      "项目最危急的时候老板不回消息。两小时后他出现了，第一句话是：",
+      "想象一下，在项目最危急的时候老板不回消息，两小时后TA出现的第一句话大概率是：",
     options: [
-      opt("「刚刚我在帮你们协调资源，现在有办法了。」", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 3 }, "return"),
+      opt("「没事，我已经解决了」", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 3 }, "return"),
       opt("「现在什么情况？你们怎么搞的？」", { E: 1, C: 1, T: 3, M: -4 }, { ROACH: 5, TRASH: 2 }, "return"),
-      opt("「我在忙，你们先自己处理。」", { E: 1, C: 1, T: 1, M: -3 }, { BUSY: 3, ROACH: 2 }, "return"),
+      opt("「我在忙，你们先自己处理」", { E: 1, C: 1, T: 1, M: -3 }, { BUSY: 3, ROACH: 2 }, "return"),
       opt("「这个事情我之前应该提醒过你们吧？」", { E: 1, C: 1, T: 4, M: -4 }, { MASK: 3, ROACH: 3, PUAer: 1 }, "return"),
     ],
   };
@@ -252,97 +253,97 @@
   Q.Q19 = {
     id: "Q19",
     phase: 2,
-    title: "爆炸现场追问题",
+    title: "",
     scenario:
-      "你只是问：「这个版本是按昨天方向继续吗？」老板突然回：「？」接下来他更可能：",
+      "你只是问：「这个版本是按昨天方向继续吗？」TA更可能回复：",
     options: [
-      opt("解释清楚：「对，按昨天方向。」", { E: -1, C: 0, T: -2, M: 2 }, { COVER: 1, NURSE: 1 }, "return"),
-      opt("「这还要问？你自己不会判断吗？」", { E: 1, C: 1, T: 5, M: -4 }, { BOOM: 5, TRASH: 2 }, "return"),
-      opt("不骂，但整个下午冷脸低气压。", { E: 1, C: 1, T: 4, M: -3 }, { AUV: 2, MASK: 2 }, "return"),
-      opt("「我不是早就说过了吗？」但其实没说过。", { E: 1, C: 1, T: 4, M: -4 }, { BOOM: 3, FOG: 2, TRASH: 2 }, "return"),
+      opt("「对，辛苦了」", { E: -1, C: 0, T: -2, M: 2 }, { COVER: 1, NURSE: 1 }, "return"),
+      opt("「废话！」", { E: 1, C: 1, T: 5, M: -4 }, { BOOM: 5, TRASH: 2 }, "return"),
+      opt("「你要学会自己拿主意」", { E: 1, C: 1, T: 4, M: -3 }, { AUV: 2, MASK: 2 }, "return"),
+      opt("「你觉得呢？」", { E: 1, C: 1, T: 4, M: -4 }, { BOOM: 3, FOG: 2, TRASH: 2 }, "return"),
     ],
   };
 
   Q.Q20 = {
     id: "Q20",
     phase: 2,
-    title: "阴阳怪气追问题",
+    title: "",
     scenario:
-      "你完成方案，他看完说：「你真是个人才。」这句话通常意味着？",
+      "你完成方案，TA看完说：「你真是个人才。」这句话通常意味着？",
     options: [
-      opt("真的认可，并给进一步建议。", { E: -1, C: 0, T: -1, M: 2 }, { COVER: 1, GOLD: 1 }, "return"),
-      opt("意思是「你很离谱」，但他不直接说。", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 5 }, "return"),
-      opt("他准备背后说你「不成熟」。", { E: 1, C: 1, T: 4, M: -3 }, { MASK: 4, AUV: 2 }, "return"),
-      opt("他会借题发挥，讲 20 分钟人生经验。", { E: 1, C: 1, T: 3, M: -2 }, { DADDY: 4, TEDX: 1 }, "return"),
+      opt("真的认可", { E: -1, C: 0, T: -1, M: 2 }, { COVER: 1, GOLD: 1 }, "return"),
+      opt("意思是「你很幼稚」", { E: 1, C: 1, T: 4, M: -2 }, { AUV: 5 }, "return"),
+      opt("「你这个奇葩，真是离谱」", { E: 1, C: 1, T: 4, M: -3 }, { MASK: 4, AUV: 2 }, "return"),
+      opt("即将教训你，凸显TA的职场优越感", { E: 1, C: 1, T: 3, M: -2 }, { DADDY: 4, TEDX: 1 }, "return"),
     ],
   };
 
   Q.Q21 = {
     id: "Q21",
     phase: 2,
-    title: "需求迷雾情境题",
+    title: "",
     scenario:
-      "你做了三版方案，他分别说「不够高级」「太空泛了」「感觉不对」。你问具体方向，他回答：",
+      "你做了三版方案，TA都否决了，你问具体方向，TA通常会：",
     options: [
-      opt("「是我没说清楚，我重新整理需求。」", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2 }, "return"),
-      opt("「这个你要自己理解，不能什么都问我。」", { E: 2, C: 1, T: 3, M: -4 }, { FOG: 4, PUAer: 2 }, "return"),
-      opt("「哎呀，反正就是不对。」", { E: 1, C: 1, T: 1, M: -5 }, { FOG: 5 }, "return"),
-      opt("「你先多出几个版本吧。」", { E: 3, C: 1, T: 1, M: -3 }, { FOG: 3, SUCKER: 2, OTOT: 1 }, "return"),
+      opt("给你明确答复", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2 }, "return"),
+      opt("「这个你要自己理解，不能什么都问我」", { E: 2, C: 1, T: 3, M: -4 }, { FOG: 4, PUAer: 2 }, "return"),
+      opt("「啧，反正感觉不对」", { E: 1, C: 1, T: 1, M: -5 }, { FOG: 5 }, "return"),
+      opt("「你先多出几个版本咱们挑挑看吧」", { E: 3, C: 1, T: 1, M: -3 }, { FOG: 3, SUCKER: 2, OTOT: 1 }, "return"),
     ],
   };
 
   Q.Q22 = {
     id: "Q22",
     phase: 2,
-    title: "登月 KPI 情境题",
+    title: "",
     scenario:
-      "团队 3 个人，预算很少，老板说：「今年我们要做到行业第一。」你问资源怎么匹配。",
+      "想象一下，你们团队收到一个有难度的任务，团队只有 3 个人且预算很少，老板通常会：",
     options: [
-      opt("「你说得对，我们先拆阶段目标。」", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2 }, "return"),
-      opt("「不要被现实限制想象力。」", { E: 3, C: 1, T: 3, M: -3 }, { MOON: 5, PUAer: 1 }, "return"),
-      opt("「资源不是问题，关键看你们有没有决心。」", { E: 4, C: 1, T: 3, M: -3 }, { MOON: 3, SAINT: 2, MONK: 1 }, "return"),
-      opt("「公司将来不会亏待你的，现在先把事情做起来。」", { E: 4, C: 0, T: 2, M: -2 }, { CAKE: 4, MOON: 2 }, "return"),
+      opt("「没事，我们先拆解阶段目标」", { E: -1, C: 0, T: -1, M: 3 }, { COVER: 2 }, "return"),
+      opt("「你们必须做到完美」", { E: 3, C: 1, T: 3, M: -3 }, { MOON: 5, PUAer: 1 }, "return"),
+      opt("「资源不是问题，关键看你们有没有决心」", { E: 4, C: 1, T: 3, M: -3 }, { MOON: 3, SAINT: 2, MONK: 1 }, "return"),
+      opt("「公司将来不会亏待你们的，好好干」", { E: 4, C: 0, T: 2, M: -2 }, { CAKE: 4, MOON: 2 }, "return"),
     ],
   };
 
   Q.Q23 = {
     id: "Q23",
     phase: 2,
-    title: "工位护士长情境题",
+    title: "",
     scenario:
-      "你连续几天状态很差，效率明显下降。老板注意到了，他会？",
+      "如果你连续几天状态很差，效率明显下降。老板注意到了，TA可能会？",
     options: [
-      opt("认真问是不是压力太大，要不要调整节奏。", { E: -2, C: -1, T: -3, M: 5 }, { NURSE: 6 }, "return"),
-      opt("说「大家都累，你要学会自己调整」。", { E: 3, C: 1, T: 3, M: -3 }, { PUAer: 2, MONK: 2, DADDY: 1 }, "return"),
-      opt("不问原因，只说「最近产出不太行」。", { E: 2, C: 1, T: 2, M: -3 }, { SUCKER: 2, TRASH: 1 }, "return"),
-      opt("表面关心，实际试探你是不是想离职。", { E: 1, C: 3, T: 4, M: -2 }, { MASK: 4, CCTV: 1 }, "return"),
+      opt("关心你，询问是否需要请假休息", { E: -2, C: -1, T: -3, M: 5 }, { NURSE: 6 }, "return"),
+      opt("说「大家都累，你要学会自己调整」", { E: 3, C: 1, T: 3, M: -3 }, { PUAer: 2, MONK: 2, DADDY: 1 }, "return"),
+      opt("不问原因，只说「最近产出不太行，得加把劲」", { E: 2, C: 1, T: 2, M: -3 }, { SUCKER: 2, TRASH: 1 }, "return"),
+      opt("表面关心，实际试探你是不是想离职", { E: 1, C: 3, T: 4, M: -2 }, { MASK: 4, CCTV: 1 }, "return"),
     ],
   };
 
   Q.Q24 = {
     id: "Q24",
     phase: 2,
-    title: "财神爷/画饼分辨题",
+    title: "",
     scenario:
-      "项目完成后公司拿到不错结果。老板在复盘会上说：",
+      "项目完成后公司拿到不错的结果。老板在复盘会上说：",
     options: [
-      opt("「大家辛苦了，奖金今晚会打到你们账户上。」", { E: -5, C: 0, T: -2, M: 5 }, { GOLD: 6, COVER: 2 }, "return"),
-      opt("「不要只看短期回报，这次经验很宝贵。」", { E: 4, C: 0, T: 2, M: -2 }, { SAINT: 3, CAKE: 2, MONK: 1 }, "return"),
-      opt("「这次结果不错，说明我的方向是对的。」", { E: 2, C: 1, T: 2, M: -3 }, { THIEF: 3, KING: 1 }, "return"),
-      opt("「公司将来不会亏待你们的。」", { E: 4, C: 0, T: 1, M: -2 }, { CAKE: 5 }, "return"),
+      opt("「大家辛苦了，奖金已经到你们账户上了」", { E: -5, C: 0, T: -2, M: 5 }, { GOLD: 6, COVER: 2 }, "return"),
+      opt("「不要只看短期回报，经验是无价的」", { E: 4, C: 0, T: 2, M: -2 }, { SAINT: 3, CAKE: 2, MONK: 1 }, "return"),
+      opt("「这次在我的带领下大家都做的不错」", { E: 2, C: 1, T: 2, M: -3 }, { THIEF: 3, KING: 1 }, "return"),
+      opt("「公司将来不会亏待你们的」", { E: 4, C: 0, T: 1, M: -2 }, { CAKE: 5 }, "return"),
     ],
   };
 
   Q.Q25 = {
     id: "Q25",
     phase: 2,
-    title: "感恩教育追问题",
+    title: "",
     scenario:
-      "你做出成果后，提出涨薪或补偿，他会：",
+      "假设你做出成果后，提出涨薪或补偿，TA大概率会：",
     options: [
-      opt("如果你列出贡献，他愿意考虑。", { E: -1, C: 0, T: -1, M: 2 }, { GOLD: 1, COVER: 1 }, "return"),
-      opt("开始说你心态不对、格局不够。", { E: 3, C: 1, T: 5, M: -3 }, { PUAer: 5, SAINT: 1 }, "return"),
-      opt("说年轻人吃点苦是好事。", { E: 3, C: 0, T: 3, M: -2 }, { MONK: 5, DADDY: 1 }, "return"),
+      opt("愿意考虑或者爽快答应", { E: -1, C: 0, T: -1, M: 2 }, { GOLD: 1, COVER: 1 }, "return"),
+      opt("说你心态不对、格局不够", { E: 3, C: 1, T: 5, M: -3 }, { PUAer: 5, SAINT: 1 }, "return"),
+      opt("说年轻人吃点苦是好事", { E: 3, C: 0, T: 3, M: -2 }, { MONK: 5, DADDY: 1 }, "return"),
       opt("说除了工资，你就没有在意的东西了吗？", { E: 3, C: 1, T: 3, M: -2 }, { SAINT: 5, PUAer: 1 }, "return"),
     ],
   };
@@ -350,42 +351,42 @@
   Q.Q26 = {
     id: "Q26",
     phase: 2,
-    title: "企业文化朝圣题",
+    title: "",
     scenario:
-      "公司大会上，老板把企业文化讲得像神谕。最典型的一幕是：",
+      "公司大会上，老板把企业文化讲得像圣经。最典型的一幕更像是：",
     options: [
-      opt("企业文化只是共识，不会用来压制不同意见。", { E: -1, C: -1, T: -1, M: 2 }, { COVER: 1 }, "return"),
-      opt("质疑目标就像叛教。", { E: 2, C: 4, T: 3, M: -3 }, { CULT: 5, KING: 1 }, "return"),
-      opt("要求把公司当家，但加班没有加班费。", { E: 3, C: 3, T: 2, M: -3 }, { CULT: 4, SAINT: 2 }, "return"),
-      opt("所有问题最后都变成「统一思想」。", { E: 1, C: 4, T: 2, M: -3 }, { CULT: 4, TEDX: 1 }, "return"),
+      opt("不，我的老板不会用企业文化反对不同意见", { E: -1, C: -1, T: -1, M: 2 }, { COVER: 1 }, "return"),
+      opt("质疑目标就是叛教", { E: 2, C: 4, T: 3, M: -3 }, { CULT: 5, KING: 1 }, "return"),
+      opt("要求把公司当家，但加班没有加班费", { E: 3, C: 3, T: 2, M: -3 }, { CULT: 4, SAINT: 2 }, "return"),
+      opt("滔滔不绝地讲「统一思想」", { E: 1, C: 4, T: 2, M: -3 }, { CULT: 4, TEDX: 1 }, "return"),
     ],
   };
 
   Q.Q27 = {
     id: "Q27",
     phase: 2,
-    title: "表格奴隶主追问题",
+    title: "",
     scenario:
-      "任何事情到他手里，最后都会变成：",
+      "任何事情到TA手里，最后更有可能变成：",
     options: [
-      opt("一个清晰的任务清单。", { E: -1, C: 0, T: -1, M: 2 }, { COVER: 1 }, "return"),
-      opt("「你拉个表给我。」", { E: 1, C: 3, T: 0, M: -2 }, { SHEET: 5 }, "return"),
-      opt("表格套表格，汇总套汇总。", { E: 2, C: 4, T: 1, M: -3 }, { SHEET: 5, BUSY: 1 }, "return"),
-      opt("做完表以后，他说：「这个格式不太对。」", { E: 2, C: 3, T: 2, M: -3 }, { SHEET: 4, FOG: 2 }, "return"),
+      opt("一个清晰的任务清单", { E: -1, C: 0, T: -1, M: 2 }, { COVER: 1 }, "return"),
+      opt("「你拉个表给我」", { E: 1, C: 3, T: 0, M: -2 }, { SHEET: 5 }, "return"),
+      opt("表格套表格，汇总套汇总", { E: 2, C: 4, T: 1, M: -3 }, { SHEET: 5, BUSY: 1 }, "return"),
+      opt("做完表以后，TA说：「这个格式不太对」", { E: 2, C: 3, T: 2, M: -3 }, { SHEET: 4, FOG: 2 }, "return"),
     ],
   };
 
   Q.Q28 = {
     id: "Q28",
     phase: 2,
-    title: "末代皇帝追问题",
+    title: "",
     scenario:
-      "进他办公室汇报，氛围最像：",
+      "进TA办公室汇报，氛围最像：",
     options: [
-      opt("平等讨论，谁有道理听谁的。", { E: -1, C: -1, T: -1, M: 3 }, { COVER: 2 }, "return"),
-      opt("像觐见，先猜圣意再说话。", { E: 1, C: 4, T: 3, M: -3 }, { KING: 5 }, "return"),
-      opt("他说「你是老板我是老板？」", { E: 1, C: 4, T: 4, M: -3 }, { KING: 5, DADDY: 1 }, "return"),
-      opt("他不说理由，只下圣旨。", { E: 1, C: 4, T: 2, M: -4 }, { KING: 4, BRICK: 2 }, "return"),
+      opt("轻松平等的对话", { E: -1, C: -1, T: -1, M: 3 }, { COVER: 2 }, "return"),
+      opt("像觐见皇帝，说话小心谨慎", { E: 1, C: 4, T: 3, M: -3 }, { KING: 5 }, "return"),
+      opt("因为一些小事教育你", { E: 1, C: 4, T: 4, M: -3 }, { KING: 5, DADDY: 1 }, "return"),
+      opt("小说霸总，死装且不容置疑", { E: 1, C: 4, T: 2, M: -4 }, { KING: 4, BRICK: 2 }, "return"),
     ],
   };
 
