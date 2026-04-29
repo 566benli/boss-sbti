@@ -20,7 +20,7 @@
   ];
 
   function qrUrl(url) {
-    return `https://quickchart.io/qr?text=${encodeURIComponent(url)}&size=220&margin=2&dark=e8ecf1&light=171b22`;
+    return `https://quickchart.io/qr?text=${encodeURIComponent(url)}&size=220&margin=2&dark=1a1a1a&light=ffffff`;
   }
 
   function toast(msg) {

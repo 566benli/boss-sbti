@@ -199,12 +199,19 @@
           }
           const d = data.dim || {};
           const L = window.DIMENSION_LABELS || { E: "E", C: "C", T: "T", M: "M" };
+          function styledStarLine(label, filled, total) {
+            let stars = "";
+            for (let i = 0; i < total; i++) {
+              stars += `<span style="color:${i < filled ? "var(--accent-deep,#d9880d)" : "var(--border,#ede6dc)"}">${i < filled ? "★" : "★"}</span>`;
+            }
+            return `<div class="report-dim-row"><span class="report-dim-label">${label}</span><span class="report-dim-stars">${stars}</span></div>`;
+          }
           el("report-radar").innerHTML = `
-            <h4>老板污染类型（四维归一化为 1–5 档）</h4>
-            <p>${starLine(L.E, toStars("E", d.E || 0), 5)}</p>
-            <p>${starLine(L.C, toStars("C", d.C || 0), 5)}</p>
-            <p>${starLine(L.T, toStars("T", d.T || 0), 5)}</p>
-            <p>${starLine(L.M, toStars("M", d.M || 0), 5)}</p>
+            <h4>四维污染评级</h4>
+            ${styledStarLine(L.E, toStars("E", d.E || 0), 5)}
+            ${styledStarLine(L.C, toStars("C", d.C || 0), 5)}
+            ${styledStarLine(L.T, toStars("T", d.T || 0), 5)}
+            ${styledStarLine(L.M, toStars("M", d.M || 0), 5)}
           `;
           el("report-advice").innerHTML = `<h4>生存建议</h4><p>${advice(main)}</p>`;
 

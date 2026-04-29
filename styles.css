@@ -1384,3 +1384,25 @@ h2 { margin-top: 0; }
   border: 1px solid #86efac;
   color: #166534;
 }
+
+/* ─── Report page: four-dimension star rows ─── */
+.report-dim-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 0.95rem;
+}
+
+.report-dim-row:last-child { border-bottom: none; }
+
+.report-dim-label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.report-dim-stars {
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
