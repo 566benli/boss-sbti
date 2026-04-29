@@ -344,11 +344,15 @@
   function renderLockedCard(key) {
     const t = window.BOSS_TYPES[key];
     if (!t) return `<p class="muted">未知类型：${key}</p>`;
+    const emojiHero = t.emoji
+      ? `<span class="locked-boss-emoji" role="img" aria-label="${t.code}">${t.emoji}</span>`
+      : "";
     const img = t.image
       ? `<img class="boss-img" src="${t.image}" alt="${t.code} · ${t.name}" loading="lazy" />`
       : "";
     return `
-      <h3 class="boss-title"><span class="boss-code">${t.code}</span><span class="boss-sep">｜</span><span class="boss-name">${t.name}</span></h3>
+      ${emojiHero}
+      <h3 class="boss-title"><span class="boss-code">${t.code}</span><span class="boss-name">${t.name}</span></h3>
       ${img}
       <p class="locked-desc">${t.desc || ""}</p>
     `;
@@ -383,8 +387,14 @@
 
     /* 完全加密：答完题后不暴露任何结果信息（人格代码 / 名称 / 插画 / 描述 / 四维），
      * 报告只在付款后的 report.html 呈现。这样解锁动机更强，也避免「看到结果就不付款」。*/
+    const allEmojis = Object.values(window.BOSS_TYPES || {})
+      .map((t) => t.emoji).filter(Boolean);
+    /* 随机取 4 个不重复 emoji 作为"谜题预览"，营造「你老板是哪个？」的悬念感。*/
+    const shuffled = allEmojis.sort(() => Math.random() - 0.5).slice(0, 4);
+    const teaserEmojis = shuffled.map((e) => `<span>${e}</span>`).join("");
     el("result-main").innerHTML = `
       <div class="locked-gate">
+        <div class="locked-boss-teaser" aria-hidden="true">${teaserEmojis}<span>❓</span></div>
         <div class="lock-big-icon" aria-hidden="true">🔒</div>
         <h3>鉴定完成 · 报告已加密归档</h3>
         <p class="muted lock-intro">你老板的完整物种画像已生成，付款后立即查看</p>

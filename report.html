@@ -135,21 +135,25 @@
         function renderFullCard(key) {
           const t = (window.BOSS_TYPES || {})[key];
           if (!t) return `<p class="muted">未知类型：${key}</p>`;
-          const horror = t.horror ? `<p><strong>恐怖评级：</strong>${t.horror}</p>` : "";
-          const luck = t.luck ? `<p><strong>好运评级：</strong>${t.luck}</p>` : "";
-          const heal = t.heal ? `<p><strong>治愈评级：</strong>${t.heal}</p>` : "";
-          const kd = t.keywordDanger ? `<p><strong>危险关键词：</strong>「${t.keywordDanger}」</p>` : "";
-          const kh = t.keywordHappy ? `<p><strong>幸福关键词：</strong>「${t.keywordHappy}」</p>` : "";
-          const ks = t.keywordSafe ? `<p><strong>安全关键词：</strong>「${t.keywordSafe}」</p>` : "";
+          const horror = t.horror ? `<p class="report-rating"><span class="report-rating-label">恐怖评级</span><span class="report-rating-val">${t.horror}</span></p>` : "";
+          const luck   = t.luck   ? `<p class="report-rating"><span class="report-rating-label">好运评级</span><span class="report-rating-val">${t.luck}</span></p>` : "";
+          const heal   = t.heal   ? `<p class="report-rating"><span class="report-rating-label">治愈评级</span><span class="report-rating-val">${t.heal}</span></p>` : "";
+          const kd = t.keywordDanger ? `<p class="report-keyword danger">⚠️ 危险关键词：「${t.keywordDanger}」</p>` : "";
+          const kh = t.keywordHappy  ? `<p class="report-keyword happy">✨ 幸福关键词：「${t.keywordHappy}」</p>` : "";
+          const ks = t.keywordSafe   ? `<p class="report-keyword safe">🌿 安全关键词：「${t.keywordSafe}」</p>` : "";
+          const emojiHero = t.emoji
+            ? `<span class="locked-boss-emoji" role="img" aria-label="${t.code}">${t.emoji}</span>`
+            : "";
           const img = t.image
             ? `<img class="boss-img" src="${t.image}" alt="${t.code} · ${t.name}" loading="lazy" />`
             : "";
           return `
-            <h3 class="boss-title"><span class="boss-code">${t.code}</span><span class="boss-sep">｜</span><span class="boss-name">${t.name}</span></h3>
+            ${emojiHero}
+            <h3 class="boss-title"><span class="boss-code">${t.code}</span><span class="boss-name">${t.name}</span></h3>
             ${img}
-            <p><strong>性格描述：</strong>${t.desc || ""}</p>
-            <p><strong>典型行为：</strong>${t.behavior || ""}</p>
-            ${horror}${luck}${heal}
+            <p class="report-desc">${t.desc || ""}</p>
+            <p class="report-behavior"><strong>典型行为：</strong>${t.behavior || ""}</p>
+            <div class="report-ratings">${horror}${luck}${heal}</div>
             ${kd}${kh}${ks}
           `;
         }
